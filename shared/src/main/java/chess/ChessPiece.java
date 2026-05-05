@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,7 +12,12 @@ import java.util.List;
  */
 public class ChessPiece {
 
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+    private final ChessGame.TeamColor pieceColor;
+    private final PieceType type;
+
+    public ChessPiece(ChessGame.TeamColor pieceColor, PieceType type) {
+        this.pieceColor = pieceColor;
+        this.type = type;
     }
 
     /**
@@ -30,14 +36,14 @@ public class ChessPiece {
      * @return Which team this chess piece belongs to
      */
     public ChessGame.TeamColor getTeamColor() {
-        throw new RuntimeException("Not implemented");
+        return this.pieceColor;
     }
 
     /**
      * @return which type of chess piece this piece is
      */
     public PieceType getPieceType() {
-        throw new RuntimeException("Not implemented");
+        return type;
     }
 
     /**
@@ -47,7 +53,137 @@ public class ChessPiece {
      *
      * @return Collection of valid moves
      */
+
+    public static boolean WithinBounds(ChessPosition position){
+        return position.getRow() >= 0 && position.getRow() <= 7;
+    }
+
+    public static Collection<ChessMove> BishopCalc(ChessBoard board, ChessPosition position) {
+        List<ChessMove> list = new ArrayList<ChessMove>();
+        ChessPosition start = position;
+        position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
+        }
+        position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
+        }
+        return list;
+    }
+
+    public static Collection<ChessMove> QueenCalc(ChessBoard board, ChessPosition position) {
+        List<ChessMove> list = new ArrayList<ChessMove>();
+        ChessPosition start = position;
+        position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
+        }
+        position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
+        }
+        position = new ChessPosition(position.getRow(), position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow(), position.getColumn()+1);
+        }
+        position = new ChessPosition(position.getRow()+1, position.getColumn());
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn());
+        }
+        position = new ChessPosition(position.getRow(), position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow(), position.getColumn()-1);
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn());
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn());
+        }
+        return list;
+    }
+
+    public static Collection<ChessMove> RookCalc(ChessBoard board, ChessPosition position) {
+        List<ChessMove> list = new ArrayList<ChessMove>();
+        ChessPosition start = position;
+        position = new ChessPosition(position.getRow()+1, position.getColumn());
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()+1, position.getColumn());
+        }
+        position = new ChessPosition(position.getRow()-1, position.getColumn());
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow()-1, position.getColumn());
+        }
+        position = new ChessPosition(position.getRow(), position.getColumn()-1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow(), position.getColumn()-1);
+        }
+        position = new ChessPosition(position.getRow(), position.getColumn()+1);
+        while (board.getPiece(position) == null) {
+            if (!WithinBounds(position)) break;
+            list.add(new ChessMove(start, position, null));
+            position = new ChessPosition(position.getRow(), position.getColumn()+1);
+        }
+        return list;
+    }
+
+
+
+
+
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
+        ChessPiece piece = board.getPiece(myPosition);
+        if (piece.getPieceType() == PieceType.BISHOP) {
+            return BishopCalc(board, myPosition);
+        }
+        if (piece.getPieceType() == PieceType.QUEEN){
+            return QueenCalc(board, myPosition);
+        }
         return List.of();
     }
 }
