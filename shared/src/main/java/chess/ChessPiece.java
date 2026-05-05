@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Represents a single chess piece
@@ -11,6 +12,19 @@ import java.util.List;
  * signature of the existing methods.
  */
 public class ChessPiece {
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return pieceColor == that.pieceColor && type == that.type;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type);
+    }
 
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
@@ -55,34 +69,35 @@ public class ChessPiece {
      */
 
     public static boolean WithinBounds(ChessPosition position){
-        return position.getRow() >= 0 && position.getRow() <= 7;
+        return position.getRow() >= 1 && position.getRow() <= 8 && position.getColumn() >= 1 && position.getColumn() <= 8;
     }
 
     public static Collection<ChessMove> BishopCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<ChessMove>();
         ChessPosition start = position;
+        ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
         position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
-        while (board.getPiece(position) == null) {
-            if (!WithinBounds(position)) break;
+        while (WithinBounds(position) && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != color)) {
             list.add(new ChessMove(start, position, null));
+            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) break;
             position = new ChessPosition(position.getRow()+1, position.getColumn()+1);
         }
-        position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
-        while (board.getPiece(position) == null) {
-            if (!WithinBounds(position)) break;
+        position = new ChessPosition(start.getRow()-1, start.getColumn()-1);
+        while (WithinBounds(position) && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != color)) {
             list.add(new ChessMove(start, position, null));
+            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) break;
             position = new ChessPosition(position.getRow()-1, position.getColumn()-1);
         }
-        position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
-        while (board.getPiece(position) == null) {
-            if (!WithinBounds(position)) break;
+        position = new ChessPosition(start.getRow()-1, start.getColumn()+1);
+        while (WithinBounds(position) && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != color)) {
             list.add(new ChessMove(start, position, null));
+            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) break;
             position = new ChessPosition(position.getRow()-1, position.getColumn()+1);
         }
-        position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
-        while (board.getPiece(position) == null) {
-            if (!WithinBounds(position)) break;
+        position = new ChessPosition(start.getRow()+1, start.getColumn()-1);
+        while (WithinBounds(position) && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != color)) {
             list.add(new ChessMove(start, position, null));
+            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) break;
             position = new ChessPosition(position.getRow()+1, position.getColumn()-1);
         }
         return list;
