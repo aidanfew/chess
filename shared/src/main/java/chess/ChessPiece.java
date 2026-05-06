@@ -355,14 +355,6 @@ public class ChessPiece {
         return list;
     }
 
-
-
-
-
-
-
-
-
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         ChessPiece piece = board.getPiece(myPosition);
         if (piece.getPieceType() == PieceType.BISHOP) {
