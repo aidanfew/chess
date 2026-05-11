@@ -9,6 +9,15 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
 
     public ChessGame() {
 
