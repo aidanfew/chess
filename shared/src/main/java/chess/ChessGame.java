@@ -1,6 +1,8 @@
 package chess;
 
+
 import java.util.Collection;
+import java.util.List;
 
 /**
  * A class that can manage a chess game, making moves on a board
@@ -9,6 +11,8 @@ import java.util.Collection;
  * signature of the existing methods.
  */
 public class ChessGame {
+
+    int count = 0;
     @Override
     public int hashCode() {
         return super.hashCode();
@@ -27,7 +31,11 @@ public class ChessGame {
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        throw new RuntimeException("Not implemented");
+        if (count % 2 == 0) {
+            return TeamColor.WHITE;
+        } else {
+            return TeamColor.BLACK;
+        }
     }
 
     /**
@@ -54,8 +62,24 @@ public class ChessGame {
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
+
+//    public boolean checkBoard(ChessBoard board, ChessPosition position) {
+//        ChessBoard new_board = new ChessBoard().make
+//    }
+
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessBoard board = getBoard();
+        ChessPiece piece = board.getPiece(startPosition);
+
+        if (piece == null) {
+            return null;
+        } else {
+            Collection<ChessMove> moves_list = piece.pieceMoves(board, startPosition);
+            for (int i = 0; i < moves_list.size() + 1; i++) {
+                // if the move puts us in check, don't append to our new list that we will return
+                if (moves_list)
+            }
+        }
     }
 
     /**
@@ -65,7 +89,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        count ++;
     }
 
     /**
@@ -75,7 +99,10 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        ChessBoard board = getBoard();
+        if (getTeamTurn() == teamColor) {
+        //
+        }
     }
 
     /**

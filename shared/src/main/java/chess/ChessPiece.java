@@ -68,11 +68,11 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
 
-    public static boolean WithinBounds(ChessPosition position){
+    public boolean WithinBounds(ChessPosition position){
         return position.getRow() >= 1 && position.getRow() <= 8 && position.getColumn() >= 1 && position.getColumn() <= 8;
     }
 
-    public static Collection<ChessMove> BishopCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> BishopCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
@@ -103,7 +103,7 @@ public class ChessPiece {
         return list;
     }
 
-    public static Collection<ChessMove> QueenCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> QueenCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
@@ -159,7 +159,7 @@ public class ChessPiece {
         return list;
     }
 
-    public static Collection<ChessMove> RookCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> RookCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
@@ -190,7 +190,7 @@ public class ChessPiece {
         return list;
     }
 
-    public static Collection<ChessMove> KingCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> KingCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
@@ -230,7 +230,7 @@ public class ChessPiece {
         return list;
     }
 
-    public static Collection<ChessMove> KnightCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> KnightCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
@@ -270,7 +270,7 @@ public class ChessPiece {
         return list;
     }
 
-    public static Collection<ChessMove> PawnCalc(ChessBoard board, ChessPosition position) {
+    public Collection<ChessMove> PawnCalc(ChessBoard board, ChessPosition position) {
         List<ChessMove> list = new ArrayList<>();
         ChessPosition start = position;
         ChessGame.TeamColor color = board.getPiece(start).getTeamColor();
