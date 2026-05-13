@@ -22,6 +22,7 @@ public class ChessBoard {
      * @param position where to add the piece to
      * @param piece    the piece to add
      */
+
     public void removePiece(ChessPosition position) {
         squares[position.getRow()-1][position.getColumn()-1] = null;
     }

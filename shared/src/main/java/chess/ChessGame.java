@@ -88,6 +88,18 @@ public class ChessGame {
         return null;
     }
 
+    public ChessBoard copyBoard(ChessBoard board) {
+        ChessBoard new_board = new ChessBoard();
+        for (int i=0; i<=8; i++) {
+            for (int j=0; j<=8; j++) {
+                ChessPosition position = new ChessPosition(i, j);
+                ChessPiece piece_to_add = board.getPiece(position);
+                new_board.addPiece(position, piece_to_add);
+            }
+        }
+        return new_board;
+    }
+
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessBoard board = getBoard();
         ChessPiece piece = board.getPiece(startPosition);
@@ -97,15 +109,11 @@ public class ChessGame {
             return null;
         } else {
             ArrayList<ChessMove> complete_list = (ArrayList<ChessMove>) piece.pieceMoves(board, startPosition);
-            ChessPosition KingPosition;
-            if (board.getPiece(startPosition).getTeamColor() == TeamColor.BLACK) {
-                KingPosition = findTheKing(TeamColor.WHITE);
-            } else {
-                KingPosition = findTheKing(TeamColor.BLACK);
-            }
             for (ChessMove move : complete_list) {
-                if (!simpleCheck(move, KingPosition)) {
-                    valid_moves.add(new ChessMove(startPosition, move.getEndPosition(), null));
+                ChessBoard copy_board = copyBoard(board);
+                copy_board.addPiece(move.getEndPosition(), copy_board.getPiece(move.getStartPosition()));
+                if (!isInCheck(piece.getTeamColor())) {
+                    valid_moves.add(new ChessMove(move.getStartPosition(), move.getEndPosition(), move.getPromotionPiece()));
                 }
             }
         }
@@ -126,8 +134,8 @@ public class ChessGame {
         }
         for (ChessMove place : validMoves(move.getStartPosition())) {
             if (place == move) {
-                board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
-                board.removePiece(move.getStartPosition());
+                official_board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), piece.getPieceType()));
+                official_board.removePiece(move.getStartPosition());
                 count ++;
                 break;
             }
