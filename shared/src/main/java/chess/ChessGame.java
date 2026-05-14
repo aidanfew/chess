@@ -5,6 +5,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * A class that can manage a chess game, making moves on a board
@@ -16,14 +17,19 @@ public class ChessGame {
 
     ChessBoard official_board = new ChessBoard();
     TeamColor teamturn = TeamColor.WHITE;
+
     @Override
-    public int hashCode() {
-        return super.hashCode();
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(official_board, chessGame.official_board) && teamturn == chessGame.teamturn;
     }
 
     @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
+    public int hashCode() {
+        return Objects.hash(official_board, teamturn);
     }
 
     public ChessGame() {
@@ -189,7 +195,6 @@ public class ChessGame {
                 ChessPiece piece = board.getPiece(checker);
                 if (piece != null && piece.getTeamColor().equals(teamColor)) {
                     ArrayList<ChessMove> list = (ArrayList<ChessMove>) validMoves(checker);
-                    System.out.println(list);
                     if (list != null && !list.isEmpty()) {
                         return false;
                     }
