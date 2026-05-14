@@ -85,8 +85,8 @@ public class ChessGame {
                 }
                 official_board = copy_board;
             }
+            return valid_moves;
         }
-        return valid_moves;
     }
 
 
@@ -207,39 +207,50 @@ public class ChessGame {
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
+
     public boolean isInCheckmate(TeamColor teamColor) {
+        boolean final_return = true;
         if (isInCheck(teamColor)) {
             ChessPosition king = findTheKing(teamColor);
             ChessBoard board = getBoard();
+            ArrayList<ChessMove> list = new ArrayList<>();
             if (teamColor.equals(TeamColor.WHITE)) {
                 for (int i = 1; i <= 8; i++) {
                     for (int j = 1; j <= 8; j++) {
                         ChessPosition checker = new ChessPosition(i, j);
                         ChessPiece piece = board.getPiece(checker);
                         if (piece != null && piece.getTeamColor().equals(TeamColor.WHITE)) {
-                            if (validMoves(king).isEmpty() && validMoves(checker).isEmpty()) {
-                                return true;
+                            list = (ArrayList<ChessMove>) validMoves(checker);
+                            if (list != null) {
+                                if (!list.isEmpty()) {
+                                    final_return = false;
+                                }
                             }
                         }
                     }
                 }
+                System.out.println(list);
             }
 
-            if (teamColor.equals(TeamColor.BLACK)) {
+            if (teamColor.equals(TeamColor.WHITE)) {
                 for (int i = 1; i <= 8; i++) {
                     for (int j = 1; j <= 8; j++) {
                         ChessPosition checker = new ChessPosition(i, j);
                         ChessPiece piece = board.getPiece(checker);
-                        if (piece != null && piece.getTeamColor().equals(TeamColor.BLACK)) {
-                            if (validMoves(king).isEmpty() && validMoves(checker).isEmpty()) {
-                                return true;
+                        if (piece != null && piece.getTeamColor().equals(TeamColor.WHITE)) {
+                            list = (ArrayList<ChessMove>) validMoves(checker);
+                            if (list != null) {
+                                if (!list.isEmpty()) {
+                                    final_return = false;
+                                }
                             }
                         }
                     }
                 }
+                System.out.println(list);
             }
         }
-        return false;
+        return final_return;
     }
 
     /**
