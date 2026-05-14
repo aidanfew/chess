@@ -107,4 +107,16 @@ public class ChessBoard {
         addPiece(new ChessPosition(1,5), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
         addPiece(new ChessPosition(8,5), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
     }
+
+    public ChessBoard copyBoard(ChessBoard board) {
+        ChessBoard new_board = new ChessBoard();
+        for (int i=1; i<=8; i++) {
+            for (int j=1; j<=8; j++) {
+                ChessPosition position = new ChessPosition(i, j);
+                ChessPiece piece_to_add = board.getPiece(position);
+                new_board.addPiece(position, piece_to_add);
+            }
+        }
+        return new_board;
+    }
 }
