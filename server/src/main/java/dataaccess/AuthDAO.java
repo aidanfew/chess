@@ -12,8 +12,12 @@ public class AuthDAO {
         return UUID.randomUUID().toString();
     }
 
-    public void createAuth(AuthData authData){
-        AuthMap.put(authData.username(), generateToken());
+    public AuthData createAuth(String username){
+        return new AuthData(generateToken(), username);
+    }
+
+    public void storeAuth(AuthData authData) {
+        AuthMap.put(authData.username(), authData.authToken());
     }
 
     public String getAuth(String username) {
