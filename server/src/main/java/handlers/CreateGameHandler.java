@@ -10,6 +10,8 @@ import results.CreateGameResult;
 import service.GameService;
 import service.UserService;
 
+import java.util.Objects;
+
 public class CreateGameHandler implements Handler {
     private final UserService userService;
     private final GameService gameService;
@@ -29,6 +31,19 @@ public class CreateGameHandler implements Handler {
         } catch (DataAccessException e) {
             SharedHandlerMethods.catchException(e, ctx);
         }
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        CreateGameHandler that = (CreateGameHandler) o;
+        return Objects.equals(userService, that.userService) && Objects.equals(gameService, that.gameService);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userService, gameService);
     }
 }

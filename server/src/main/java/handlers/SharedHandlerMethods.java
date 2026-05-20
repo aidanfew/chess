@@ -14,10 +14,4 @@ public class SharedHandlerMethods {
         ctx.status(e.getStatus());
         ctx.result(exceptionResponse);
     }
-
-//    public void serializeRequest(Context ctx, Class<?> type) {
-//        var serializer = new Gson();
-//        String json = ctx.body();
-//        type request = serializer.fromJson(json, type.getDeclaringClass());
-//    }
 }

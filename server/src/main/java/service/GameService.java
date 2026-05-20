@@ -4,7 +4,9 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import requests.CreateGameRequest;
+import requests.JoinGameRequest;
 import results.CreateGameResult;
+import results.JoinGameResult;
 
 import java.util.Objects;
 
@@ -27,6 +29,15 @@ public class GameService {
         } else {
             String message = "Error: (description of error)";
             throw new DataAccessException(message, 500);
+        }
+    }
+
+    public void joinGame(JoinGameRequest joinGameRequest, String authToken, AuthDAO authDataMap) throws Exception {
+        String playerColor = joinGameRequest.playerColor();
+        Integer gameID = joinGameRequest.gameID();
+        if (game.getGame(gameID) != null && SharedServices.userVerified(authToken, authDataMap)
+        && (Objects.equals(playerColor, "WHITE") || Objects.equals(playerColor, "BLACK"))) {
+            if (Objects.equals(playerColor, ))
         }
     }
 

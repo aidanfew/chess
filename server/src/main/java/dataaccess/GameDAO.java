@@ -38,6 +38,8 @@ public class GameDAO {
         GameMap.replace(gameID, oldData, newData);
     }
 
+    public void joinGame()
+
     public void clear() {
         GameMap.clear();
     }
