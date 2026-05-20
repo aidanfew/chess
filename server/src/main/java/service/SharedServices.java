@@ -10,11 +10,11 @@ public class SharedServices {
         return userData.password().equals(password);
     }
 
-    public static boolean userVerified(String authToken, AuthDAO authDataMap) {
-        return authDataMap.getAuth(authToken) != null;
+    public static boolean userVerified(String authToken, AuthDAO authDAO) {
+        return authDAO.getAuth(authToken) != null;
     }
 
-    public static boolean playerColorVerified(String playerColor) {
-        if (!Objects.equals(playerColor, "WHITE") || !Objects.equals(playerColor, "BLACK"))
-    }
+//    public static boolean playerColorVerified(String playerColor) {
+//        if (!Objects.equals(playerColor, "WHITE") || !Objects.equals(playerColor, "BLACK"))
+//    }
 }

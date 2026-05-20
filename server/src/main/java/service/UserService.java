@@ -17,10 +17,9 @@ import java.util.Objects;
 
 public class UserService {
     UserDAO user = new UserDAO();
-    AuthDAO auth = new AuthDAO();
 
 
-    public RegisterResult register(RegisterRequest registerRequest) throws Exception {
+    public RegisterResult register(RegisterRequest registerRequest, AuthDAO authDAO) throws Exception {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
@@ -32,7 +31,7 @@ public class UserService {
         if (user.getUser(username) == null){
             user.createUser(new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email()));
             String newToken = AuthDAO.generateToken();
-            auth.createAuth(new AuthData(newToken, username));
+            authDAO.createAuth(new AuthData(newToken, username));
             return new RegisterResult(newToken, username);
         } else if (user.getUser(username) != null) {
             String message = "Error: already taken";
@@ -44,7 +43,7 @@ public class UserService {
     }
 
 
-    public LoginResult login(LoginRequest loginRequest) throws Exception {
+    public LoginResult login(LoginRequest loginRequest, AuthDAO authDAO) throws Exception {
         String username = loginRequest.username();
         String password = loginRequest.password();
         if (Objects.equals(username, "") || Objects.equals(password, "") || username == null || password == null) {
@@ -53,7 +52,7 @@ public class UserService {
         }
         if (user.getUser(username) != null && SharedServices.passwordCorrect(password, user.getUser(username))) {
             String newToken = AuthDAO.generateToken();
-            auth.createAuth(new AuthData(newToken, username));
+            authDAO.createAuth(new AuthData(newToken, username));
             return new LoginResult(newToken, username);
         } else if (user.getUser(username) == null || !SharedServices.passwordCorrect(password, user.getUser(username))) {
             String message = "Error: unauthorized";
@@ -65,9 +64,9 @@ public class UserService {
     }
 
 
-    public LogoutResult logout(String authToken) throws Exception {
-        if (auth.getAuth(authToken) != null) {
-            auth.deleteAuth(authToken);
+    public LogoutResult logout(String authToken, AuthDAO authDAO) throws Exception {
+        if (authDAO.getAuth(authToken) != null) {
+            authDAO.deleteAuth(authToken);
             return new LogoutResult();
         } else {
             String message = "Error: unauthorized";
@@ -77,11 +76,6 @@ public class UserService {
 
     public void clear() {
         user.clear();
-        auth.clear();
-    }
-
-    public AuthDAO provideAuthData() {
-        return auth;
     }
 
     @Override
@@ -90,11 +84,11 @@ public class UserService {
             return false;
         }
         UserService that = (UserService) o;
-        return Objects.equals(user, that.user) && Objects.equals(auth, that.auth);
+        return Objects.equals(user, that.user);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(user, auth);
+        return Objects.hashCode(user);
     }
 }

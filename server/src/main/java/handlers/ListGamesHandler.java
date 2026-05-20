@@ -5,32 +5,30 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
-import org.jetbrains.annotations.NotNull;
-import requests.CreateGameRequest;
-import results.CreateGameResult;
+import requests.ListGamesRequest;
+import results.ListGamesHelperResult;
+import results.ListGamesResult;
 import service.GameService;
-import service.UserService;
 
+import java.util.Collection;
 import java.util.Objects;
 
-public class CreateGameHandler implements Handler {
+public class ListGamesHandler implements Handler {
     private final GameService gameService;
     private final AuthDAO authDAO;
-    public CreateGameHandler(GameService gameService, AuthDAO authDAO) {
+
+    public ListGamesHandler(GameService gameService, AuthDAO authDAO) {
         this.gameService = gameService;
         this.authDAO = authDAO;
     }
-
-    public void handle(@NotNull Context ctx) throws Exception {
+    public void handle(Context ctx) throws Exception {
         var serializer = new Gson();
-        String gameName = ctx.body();
         String authToken = ctx.header("authorization");
-        CreateGameRequest gameNameRequest = serializer.fromJson(gameName, CreateGameRequest.class);
-        CreateGameRequest request = new CreateGameRequest(gameNameRequest.gameName(), authToken);
+        ListGamesRequest request = new ListGamesRequest(authToken);
         try {
-            CreateGameResult response = gameService.createGame(request, authDAO);
-            String jsonResponse = serializer.toJson(response);
-            ctx.result(jsonResponse);
+            Collection<ListGamesHelperResult> response = gameService.listGames(request, authDAO);
+            ListGamesResult list = new ListGamesResult(response);
+            ctx.result(serializer.toJson(list));
         } catch (DataAccessException e) {
             SharedHandlerMethods.catchException(e, ctx);
         }
@@ -41,7 +39,7 @@ public class CreateGameHandler implements Handler {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        CreateGameHandler that = (CreateGameHandler) o;
+        ListGamesHandler that = (ListGamesHandler) o;
         return Objects.equals(gameService, that.gameService) && Objects.equals(authDAO, that.authDAO);
     }
 
@@ -50,3 +48,4 @@ public class CreateGameHandler implements Handler {
         return Objects.hash(gameService, authDAO);
     }
 }
+

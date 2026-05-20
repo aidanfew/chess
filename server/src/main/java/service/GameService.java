@@ -6,25 +6,31 @@ import dataaccess.GameDAO;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
+import requests.ListGamesRequest;
 import results.CreateGameResult;
 import results.JoinGameResult;
+import results.ListGamesHelperResult;
+import results.ListGamesResult;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 public class GameService {
     GameDAO game = new GameDAO();
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest, String authToken, AuthDAO authDataMap) throws Exception {
+    public CreateGameResult createGame(CreateGameRequest createGameRequest, AuthDAO authDAO) throws Exception {
         String gameName = createGameRequest.gameName();
-        if (Objects.equals(gameName, "") || gameName == null) {
+        String authToken = createGameRequest.authToken();
+        if (Objects.equals(gameName, "") || gameName == null || Objects.equals(authToken, "") || authToken == null) {
             String message = "Error: bad request";
             throw new DataAccessException(message, 400);
         }
-        if (SharedServices.userVerified(authToken, authDataMap)) {
+        if (SharedServices.userVerified(authToken, authDAO)) {
             game.createGame(gameName);
             Integer gameID = game.currentGameID();
             return new CreateGameResult(gameID);
-        } else if (!SharedServices.userVerified(authToken, authDataMap)) {
+        } else if (!SharedServices.userVerified(authToken, authDAO)) {
             String message = "Error: unauthorized";
             throw new DataAccessException(message, 401);
         } else {
@@ -33,21 +39,47 @@ public class GameService {
         }
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, String authToken, AuthDAO authDataMap) throws Exception {
+    public void joinGame(JoinGameRequest joinGameRequest, AuthDAO authDAO) throws Exception {
         String playerColor = joinGameRequest.playerColor();
+        String authToken = joinGameRequest.authToken();
         Integer gameID = joinGameRequest.gameID();
-        GameData gameData = game.getGame(gameID);
-        if (gameData != null && SharedServices.userVerified(authToken, authDataMap)
-        && (Objects.equals(playerColor, "WHITE") || Objects.equals(playerColor, "BLACK"))) {
-            if (Objects.equals(playerColor, "BLACK") && gameData.blackUsername() == null) {
-                // join game for black player
-            } else if (Objects.equals(playerColor, "WHITE") && gameData.whiteUsername() == null) {
-                // join game for white player
-            } else {
-                String message = "Error: already taken";
-                throw new DataAccessException(message, 403);
-            }
+        if (gameID == null) {
+            String message = "Error: bad request";
+            throw new DataAccessException(message, 400);
         }
+        GameData gameData = game.getGame(gameID);
+        if (gameData == null) {
+            String message = "Error: unauthorized";
+            throw new DataAccessException(message, 401);
+        }
+        if (!SharedServices.userVerified(authToken, authDAO)) {
+            String message = "Error: unauthorized";
+            throw new DataAccessException(message, 401);
+        }
+        if (!Objects.equals(playerColor, "WHITE") && !Objects.equals(playerColor, "BLACK")) {
+            String message = "Error: bad request";
+            throw new DataAccessException(message, 400);
+        }
+        if (Objects.equals(playerColor, "BLACK") && gameData.blackUsername() == null) {
+            String newBlackUser = authDAO.getAuth(authToken).username();
+            GameData joined = new GameData(gameData.gameID(), gameData.whiteUsername(), newBlackUser, gameData.gameName(), gameData.game());
+            game.replaceGame(gameID, gameData, joined);
+        } else if (Objects.equals(playerColor, "WHITE") && gameData.whiteUsername() == null) {
+            String newWhiteUser = authDAO.getAuth(authToken).username();
+            GameData joined = new GameData(gameData.gameID(), newWhiteUser, gameData.blackUsername(), gameData.gameName(), gameData.game());
+            game.replaceGame(gameID, gameData, joined);
+        } else {
+            String message = "Error: already taken";
+            throw new DataAccessException(message, 403);
+        }
+    }
+
+    public Collection<ListGamesHelperResult> listGames(ListGamesRequest listGamesRequest, AuthDAO authDAO) throws Exception {
+        if (!SharedServices.userVerified(listGamesRequest.authToken(), authDAO)) {
+            String message = "Error: unauthorized";
+            throw new DataAccessException(message, 401);
+        }
+        return game.createHelperList();
     }
 
     public void clear() {

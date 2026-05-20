@@ -2,6 +2,7 @@ package dataaccess;
 
 import chess.ChessGame;
 import model.GameData;
+import results.ListGamesHelperResult;
 
 import java.util.*;
 
@@ -28,6 +29,10 @@ public class GameDAO {
         return new ArrayList<>(gameMap.values());
     }
 
+    public void replaceGame(int gameID, GameData oldData, GameData newData) {
+        GameMap.replace(gameID, oldData, newData);
+    }
+
     public void updateGame(int gameID, ChessGame newGame) {
         GameData oldData = GameMap.get(gameID);
         GameData newData = new GameData(oldData.gameID(),
@@ -38,7 +43,14 @@ public class GameDAO {
         GameMap.replace(gameID, oldData, newData);
     }
 
-    public void joinGame()
+    public Collection<ListGamesHelperResult> createHelperList() {
+        ArrayList<ListGamesHelperResult> list = new ArrayList<>();
+        for (GameData game : GameMap.values()) {
+            ListGamesHelperResult result = new ListGamesHelperResult(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName());
+            list.add(result);
+        }
+        return list;
+    }
 
     public void clear() {
         GameMap.clear();
