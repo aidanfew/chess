@@ -3,6 +3,7 @@ package service;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import results.CreateGameResult;
@@ -35,9 +36,17 @@ public class GameService {
     public void joinGame(JoinGameRequest joinGameRequest, String authToken, AuthDAO authDataMap) throws Exception {
         String playerColor = joinGameRequest.playerColor();
         Integer gameID = joinGameRequest.gameID();
-        if (game.getGame(gameID) != null && SharedServices.userVerified(authToken, authDataMap)
+        GameData gameData = game.getGame(gameID);
+        if (gameData != null && SharedServices.userVerified(authToken, authDataMap)
         && (Objects.equals(playerColor, "WHITE") || Objects.equals(playerColor, "BLACK"))) {
-            if (Objects.equals(playerColor, ))
+            if (Objects.equals(playerColor, "BLACK") && gameData.blackUsername() == null) {
+                // join game for black player
+            } else if (Objects.equals(playerColor, "WHITE") && gameData.whiteUsername() == null) {
+                // join game for white player
+            } else {
+                String message = "Error: already taken";
+                throw new DataAccessException(message, 403);
+            }
         }
     }
 
