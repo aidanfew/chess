@@ -17,6 +17,10 @@ public class UserDAO {
         return UserMap.getOrDefault(username, null);
     }
 
+    public void clear(){
+        UserMap.clear();
+    }
+
 
     @Override
     public boolean equals(Object o) {

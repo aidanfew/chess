@@ -30,6 +30,10 @@ public class GameDAO {
         GameMap.replace(gameID, oldData, newData);
     }
 
+    public void clear() {
+        GameMap.clear();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

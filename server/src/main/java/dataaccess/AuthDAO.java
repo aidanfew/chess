@@ -25,6 +25,10 @@ public class AuthDAO {
         AuthMap.remove(authToken);
     }
 
+    public void clear() {
+        AuthMap.clear();
+    }
+
 
     @Override
     public boolean equals(Object o) {

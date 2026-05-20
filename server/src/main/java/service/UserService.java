@@ -1,13 +1,16 @@
 package service;
 
+import com.google.gson.JsonArray;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
 import requests.LoginRequest;
+import requests.LogoutRequest;
 import requests.RegisterRequest;
 import results.LoginResult;
+import results.LogoutResult;
 import results.RegisterResult;
 
 import java.util.Objects;
@@ -57,6 +60,17 @@ public class UserService {
         } else {
             String message = "Error: (description of error)";
             throw new DataAccessException(message, 500);
+        }
+    }
+
+
+    public LogoutResult logout(String authToken) throws Exception {
+        if (auth.getAuth(authToken) != null) {
+            auth.deleteAuth(authToken);
+            return new LogoutResult();
+        } else {
+            String message = "Error: unauthorized";
+            throw new DataAccessException(message, 403);
         }
     }
 
