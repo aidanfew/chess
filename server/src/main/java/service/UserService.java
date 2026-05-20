@@ -24,7 +24,8 @@ public class UserService {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
-        if (Objects.equals(username, "") || Objects.equals(password, "") || Objects.equals(email, "")) {
+        if (Objects.equals(username, "") || Objects.equals(password, "") || Objects.equals(email, "")
+        || username == null || password == null || email == null) {
             String message = "Error: bad request";
             throw new DataAccessException(message, 400);
         }
@@ -46,7 +47,7 @@ public class UserService {
     public LoginResult login(LoginRequest loginRequest) throws Exception {
         String username = loginRequest.username();
         String password = loginRequest.password();
-        if (Objects.equals(username, "") || Objects.equals(password, "")) {
+        if (Objects.equals(username, "") || Objects.equals(password, "") || username == null || password == null) {
             String message = "Error: bad request";
             throw new DataAccessException(message, 400);
         }
@@ -56,7 +57,7 @@ public class UserService {
             return new LoginResult(newToken, username);
         } else if (user.getUser(username) == null || !SharedServices.passwordCorrect(password, user.getUser(username))) {
             String message = "Error: unauthorized";
-            throw new DataAccessException(message, 403);
+            throw new DataAccessException(message, 401);
         } else {
             String message = "Error: (description of error)";
             throw new DataAccessException(message, 500);
@@ -70,8 +71,13 @@ public class UserService {
             return new LogoutResult();
         } else {
             String message = "Error: unauthorized";
-            throw new DataAccessException(message, 403);
+            throw new DataAccessException(message, 401);
         }
+    }
+
+    public void clear() {
+        user.clear();
+        auth.clear();
     }
 
     @Override

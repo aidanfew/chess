@@ -4,10 +4,13 @@ import com.google.gson.Gson;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 
+import java.util.Map;
+
 public class SharedHandlerMethods {
     public static void catchException(DataAccessException e, Context ctx) {
         var exceptionSerializer = new Gson();
-        String exceptionResponse = exceptionSerializer.toJson(e.getMessage());
+        Map<String, String> map = Map.of("message", e.getMessage());
+        String exceptionResponse = exceptionSerializer.toJson(map);
         ctx.status(e.getStatus());
         ctx.result(exceptionResponse);
     }

@@ -29,7 +29,6 @@ public class AuthDAO {
         AuthMap.clear();
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -43,5 +42,4 @@ public class AuthDAO {
     public int hashCode() {
         return Objects.hashCode(AuthMap);
     }
-
 }

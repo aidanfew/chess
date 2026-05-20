@@ -21,7 +21,6 @@ public class UserDAO {
         UserMap.clear();
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
