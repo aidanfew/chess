@@ -7,9 +7,17 @@ import java.util.*;
 
 public class GameDAO {
     Map<Integer, GameData> GameMap = new HashMap<>();
+    Integer gameID = 0;
 
-    public void createGame(GameData gameData) {
-        GameMap.put(gameData.gameID(), gameData);
+    public void createGame(String gameName) {
+        gameID++;
+        GameData gameData = new GameData(gameID, null, null,
+                gameName, new ChessGame());
+        GameMap.put(gameID, gameData);
+    }
+
+    public Integer currentGameID() {
+        return gameID;
     }
 
     public GameData getGame(int gameID) {

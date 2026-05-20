@@ -80,6 +80,10 @@ public class UserService {
         auth.clear();
     }
 
+    public AuthDAO provideAuthData() {
+        return auth;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
