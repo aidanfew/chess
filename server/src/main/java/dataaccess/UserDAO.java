@@ -7,6 +7,17 @@ import java.util.Map;
 import java.util.Objects;
 
 public class UserDAO {
+    Map<String, UserData> UserMap = new HashMap<>();
+
+    public void createUser(UserData userData) {
+        UserMap.put(userData.username(), userData);
+    }
+
+    public UserData getUser(String username) {
+        return UserMap.getOrDefault(username, null);
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -20,16 +31,4 @@ public class UserDAO {
     public int hashCode() {
         return Objects.hashCode(UserMap);
     }
-
-    Map<String, UserData> UserMap = new HashMap<>();
-
-    public void createUser(UserData userData) {
-        UserMap.put(userData.username(), userData);
-    }
-
-    public UserData getUser(String username) {
-        return UserMap.getOrDefault(username, null);
-    }
-
-
 }
