@@ -152,6 +152,13 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
 
+    public boolean isInCheckHelper(ChessPiece piece, ChessBoard board, ChessPosition checker, ChessPosition kingPosition) {
+        if (isInCheckHelper(teamColor, piece, board, checker, kingPosition)) {
+            return true;
+        }
+        return false;
+    }
+
     public boolean isInCheck(TeamColor teamColor) {
         ChessBoard board = getBoard();
         ChessPosition kingPosition = findTheKing(teamColor);
@@ -159,16 +166,23 @@ public class ChessGame {
                 for (int j=1; j<=8; j++) {
                     ChessPosition checker = new ChessPosition(i, j);
                     ChessPiece piece = board.getPiece(checker);
-                    if (piece != null && piece.getTeamColor() != teamColor) {
-                        ArrayList<ChessMove> moves = (ArrayList<ChessMove>) piece.pieceMoves(board, checker);
-                        for (ChessMove move : moves) {
-                            if (move.getEndPosition().equals(kingPosition)) {
-                                return true;
-                            }
-                        }
+                    if (isInCheckHelper(teamColor, piece, board, checker, kingPosition)) {
+                        return true;
                     }
                 }
             }
+        return false;
+    }
+
+    private static boolean isInCheckHelper(TeamColor teamColor, ChessPiece piece, ChessBoard board, ChessPosition checker, ChessPosition kingPosition) {
+        if (piece != null && piece.getTeamColor() != teamColor) {
+            ArrayList<ChessMove> moves = (ArrayList<ChessMove>) piece.pieceMoves(board, checker);
+            for (ChessMove move : moves) {
+                if (move.getEndPosition().equals(kingPosition)) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 

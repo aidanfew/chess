@@ -278,7 +278,8 @@ public class ChessPiece {
                     list.add(new ChessMove(start, downTwo, null));
                 }
             }
-            if (withinBounds(downRight) && board.getPiece(downRight) != null && board.getPiece(downRight).getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (withinBounds(downRight) && board.getPiece(downRight) != null &&
+                    board.getPiece(downRight).getTeamColor() == ChessGame.TeamColor.WHITE) {
                 if (downRight.getRow() == 1) {
                     list.add(new ChessMove(start, downRight, PieceType.KNIGHT));
                     list.add(new ChessMove(start, downRight, PieceType.QUEEN));
