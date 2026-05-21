@@ -1,16 +1,20 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import model.AuthData;
+import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import requests.LoginRequest;
-import requests.RegisterRequest;
-import results.RegisterResult;
+import requests.*;
+import results.ListGamesHelperResult;
+import results.ListGamesResult;
+
+import java.util.Collection;
 
 
 public class ServiceTests {
@@ -73,6 +77,98 @@ public class ServiceTests {
         service.login(loginRequest, authDAO);
         Assertions.assertTrue(AuthDAO.AuthMap.isEmpty());
     }
+
+    @Test
+    @DisplayName("Positive Logout Test")
+    public void positiveLogout() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        UserService service = new UserService();
+        service.logout("1234", authDAO);
+        Assertions.assertTrue(AuthDAO.AuthMap.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Negative Logout Test: Wrong Token")
+    public void negativeLogout() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        UserService service = new UserService();
+        service.logout("1235", authDAO);
+        Assertions.assertFalse(AuthDAO.AuthMap.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Positive Create Game")
+    public void positiveCreateGame() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        CreateGameRequest request = new CreateGameRequest("game1", "1234");
+        GameService service = new GameService();
+        service.createGame(request, authDAO);
+        Assertions.assertFalse(GameDAO.GameMap.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Negative Create Game: Wrong Token")
+    public void negativeCreateGame() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        CreateGameRequest request = new CreateGameRequest("game1", "1235");
+        GameService service = new GameService();
+        service.createGame(request, authDAO);
+        Assertions.assertTrue(GameDAO.GameMap.isEmpty());
+    }
+
+    @Test
+    @DisplayName("Positive Join Game")
+    public void positiveJoinGame() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        GameDAO.GameMap.put(1, new GameData(1, "white", null, "game1", new ChessGame()));
+        JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
+        GameService service = new GameService();
+        service.joinGame(request, authDAO);
+        Assertions.assertEquals("user1", GameDAO.GameMap.get(1).blackUsername());
+    }
+
+    @Test
+    @DisplayName("Negative Join Game: Both Colors Taken")
+    public void negativeJoinGame() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        GameDAO.GameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
+        JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
+        GameService service = new GameService();
+        service.joinGame(request, authDAO);
+        Assertions.assertSame("black", GameDAO.GameMap.get(1).blackUsername());
+    }
+
+    @Test
+    @DisplayName("Positive List Games")
+    public void positiveListGames() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        ListGamesRequest request = new ListGamesRequest("1234");
+        GameService service = new GameService();
+        Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
+        ListGamesResult list = new ListGamesResult(response);
+        Assertions.assertFalse(list.games().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Negative List Games: Games is Empty")
+    public void negativeListGames() throws Exception {
+        clearAll();
+        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        ListGamesRequest request = new ListGamesRequest("1235");
+        GameService service = new GameService();
+        Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
+        ListGamesResult list = new ListGamesResult(response);
+        Assertions.assertTrue(list.games().isEmpty());
+    }
+
+
 
 
 
