@@ -7,14 +7,14 @@ import results.ListGamesHelperResult;
 import java.util.*;
 
 public class GameDAO {
-    public static Map<Integer, GameData> GameMap = new HashMap<>();
+    public static Map<Integer, GameData> gameMap = new HashMap<>();
     Integer gameID = 0;
 
     public void createGame(String gameName) {
         gameID++;
         GameData gameData = new GameData(gameID, null, null,
                 gameName, new ChessGame());
-        GameMap.put(gameID, gameData);
+        gameMap.put(gameID, gameData);
     }
 
     public Integer currentGameID() {
@@ -22,7 +22,7 @@ public class GameDAO {
     }
 
     public GameData getGame(int gameID) {
-        return GameMap.get(gameID);
+        return gameMap.get(gameID);
     }
 
     public Collection<GameData> listGames(HashMap<Integer, GameData> gameMap) {
@@ -30,22 +30,22 @@ public class GameDAO {
     }
 
     public void replaceGame(int gameID, GameData oldData, GameData newData) {
-        GameMap.replace(gameID, oldData, newData);
+        gameMap.replace(gameID, oldData, newData);
     }
 
     public void updateGame(int gameID, ChessGame newGame) {
-        GameData oldData = GameMap.get(gameID);
+        GameData oldData = gameMap.get(gameID);
         GameData newData = new GameData(oldData.gameID(),
                 oldData.whiteUsername(),
                 oldData.blackUsername(),
                 oldData.gameName(),
                 newGame);
-        GameMap.replace(gameID, oldData, newData);
+        gameMap.replace(gameID, oldData, newData);
     }
 
     public Collection<ListGamesHelperResult> createHelperList() {
         ArrayList<ListGamesHelperResult> list = new ArrayList<>();
-        for (GameData game : GameMap.values()) {
+        for (GameData game : gameMap.values()) {
             ListGamesHelperResult result = new ListGamesHelperResult(game.gameID(), game.whiteUsername(), game.blackUsername(), game.gameName());
             list.add(result);
         }
@@ -53,6 +53,6 @@ public class GameDAO {
     }
 
     public void clear() {
-        GameMap.clear();
+        gameMap.clear();
     }
 }

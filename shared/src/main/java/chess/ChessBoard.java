@@ -109,14 +109,14 @@ public class ChessBoard {
     }
 
     public ChessBoard copyBoard(ChessBoard board) {
-        ChessBoard new_board = new ChessBoard();
+        ChessBoard newBoard = new ChessBoard();
         for (int i=1; i<=8; i++) {
             for (int j=1; j<=8; j++) {
                 ChessPosition position = new ChessPosition(i, j);
-                ChessPiece piece_to_add = board.getPiece(position);
-                new_board.addPiece(position, piece_to_add);
+                ChessPiece piece = board.getPiece(position);
+                newBoard.addPiece(position, piece);
             }
         }
-        return new_board;
+        return newBoard;
     }
 }

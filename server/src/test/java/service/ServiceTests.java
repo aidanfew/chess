@@ -31,9 +31,9 @@ public class ServiceTests {
     @DisplayName("Test Clear")
     public void clearAllSuccess() {
         clearAll();
-        Assertions.assertTrue(AuthDAO.AuthMap.isEmpty());
-        Assertions.assertTrue(UserDAO.UserMap.isEmpty());
-        Assertions.assertTrue(GameDAO.GameMap.isEmpty());
+        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
+        Assertions.assertTrue(UserDAO.userMap.isEmpty());
+        Assertions.assertTrue(GameDAO.gameMap.isEmpty());
     }
 
     @Test
@@ -43,7 +43,7 @@ public class ServiceTests {
         RegisterRequest registerRequest = new RegisterRequest("user1", "pass1", "email@email.com");
         UserService service = new UserService();
         service.register(registerRequest, authDAO);
-        Assertions.assertFalse(UserDAO.UserMap.isEmpty());
+        Assertions.assertFalse(UserDAO.userMap.isEmpty());
     }
 
     @Test
@@ -53,102 +53,102 @@ public class ServiceTests {
         RegisterRequest registerRequest = new RegisterRequest("user1", null, "email@email.com");
         UserService service = new UserService();
         service.register(registerRequest, authDAO);
-        Assertions.assertTrue(UserDAO.UserMap.isEmpty());
+        Assertions.assertTrue(UserDAO.userMap.isEmpty());
     }
 
     @Test
     @DisplayName("Positive Login Test")
     public void positiveLogin() throws Exception {
         clearAll();
-        UserDAO.UserMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
+        UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
         LoginRequest loginRequest = new LoginRequest("user1", "1234");
         UserService service = new UserService();
         service.login(loginRequest, authDAO);
-        Assertions.assertFalse(AuthDAO.AuthMap.isEmpty());
+        Assertions.assertFalse(AuthDAO.authMap.isEmpty());
     }
 
     @Test
     @DisplayName("Negative Login Test: Wrong Password")
     public void negativeLogin() throws Exception {
         clearAll();
-        UserDAO.UserMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
+        UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
         LoginRequest loginRequest = new LoginRequest("user1", "1235");
         UserService service = new UserService();
         service.login(loginRequest, authDAO);
-        Assertions.assertTrue(AuthDAO.AuthMap.isEmpty());
+        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
     }
 
     @Test
     @DisplayName("Positive Logout Test")
     public void positiveLogout() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         UserService service = new UserService();
         service.logout("1234", authDAO);
-        Assertions.assertTrue(AuthDAO.AuthMap.isEmpty());
+        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
     }
 
     @Test
     @DisplayName("Negative Logout Test: Wrong Token")
     public void negativeLogout() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         UserService service = new UserService();
         service.logout("1235", authDAO);
-        Assertions.assertFalse(AuthDAO.AuthMap.isEmpty());
+        Assertions.assertFalse(AuthDAO.authMap.isEmpty());
     }
 
     @Test
     @DisplayName("Positive Create Game")
     public void positiveCreateGame() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         CreateGameRequest request = new CreateGameRequest("game1", "1234");
         GameService service = new GameService();
         service.createGame(request, authDAO);
-        Assertions.assertFalse(GameDAO.GameMap.isEmpty());
+        Assertions.assertFalse(GameDAO.gameMap.isEmpty());
     }
 
     @Test
     @DisplayName("Negative Create Game: Wrong Token")
     public void negativeCreateGame() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         CreateGameRequest request = new CreateGameRequest("game1", "1235");
         GameService service = new GameService();
         service.createGame(request, authDAO);
-        Assertions.assertTrue(GameDAO.GameMap.isEmpty());
+        Assertions.assertTrue(GameDAO.gameMap.isEmpty());
     }
 
     @Test
     @DisplayName("Positive Join Game")
     public void positiveJoinGame() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
-        GameDAO.GameMap.put(1, new GameData(1, "white", null, "game1", new ChessGame()));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+        GameDAO.gameMap.put(1, new GameData(1, "white", null, "game1", new ChessGame()));
         JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
         GameService service = new GameService();
         service.joinGame(request, authDAO);
-        Assertions.assertEquals("user1", GameDAO.GameMap.get(1).blackUsername());
+        Assertions.assertEquals("user1", GameDAO.gameMap.get(1).blackUsername());
     }
 
     @Test
     @DisplayName("Negative Join Game: Both Colors Taken")
     public void negativeJoinGame() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
-        GameDAO.GameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+        GameDAO.gameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
         JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
         GameService service = new GameService();
         service.joinGame(request, authDAO);
-        Assertions.assertSame("black", GameDAO.GameMap.get(1).blackUsername());
+        Assertions.assertSame("black", GameDAO.gameMap.get(1).blackUsername());
     }
 
     @Test
     @DisplayName("Positive List Games")
     public void positiveListGames() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         ListGamesRequest request = new ListGamesRequest("1234");
         GameService service = new GameService();
         Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
@@ -160,7 +160,7 @@ public class ServiceTests {
     @DisplayName("Negative List Games: Games is Empty")
     public void negativeListGames() throws Exception {
         clearAll();
-        AuthDAO.AuthMap.put("1234", new AuthData("1234", "user1"));
+        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
         ListGamesRequest request = new ListGamesRequest("1235");
         GameService service = new GameService();
         Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
