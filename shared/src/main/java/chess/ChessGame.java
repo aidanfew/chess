@@ -174,7 +174,9 @@ public class ChessGame {
         return false;
     }
 
-    private static boolean isInCheckHelper(TeamColor teamColor, ChessPiece piece, ChessBoard board, ChessPosition checker, ChessPosition kingPosition) {
+    private static boolean isInCheckHelper(TeamColor teamColor, ChessPiece piece,
+                                           ChessBoard board, ChessPosition checker,
+                                           ChessPosition kingPosition) {
         if (piece != null && piece.getTeamColor() != teamColor) {
             ArrayList<ChessMove> moves = (ArrayList<ChessMove>) piece.pieceMoves(board, checker);
             for (ChessMove move : moves) {
