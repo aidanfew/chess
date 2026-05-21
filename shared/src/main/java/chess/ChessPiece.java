@@ -72,10 +72,12 @@ public class ChessPiece {
         return position.getRow() >= 1 && position.getRow() <= 8 && position.getColumn() >= 1 && position.getColumn() <= 8;
     }
 
-    public void continuousMovement(List<ChessMove> list, ChessPosition position, Integer row, Integer col, ChessPosition start, ChessBoard board, ChessGame.TeamColor color) {
+    public void continuousMovement(List<ChessMove> list, ChessPosition position,
+                                   Integer row, Integer col, ChessPosition start,
+                                   ChessBoard board, ChessGame.TeamColor color) {
         while (withinBounds(position) && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != color)) {
             list.add(new ChessMove(start, position, null));
-            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) break;
+            if (board.getPiece(position) != null && board.getPiece(position).getTeamColor() != color) {break;}
             position = new ChessPosition(position.getRow() + row, position.getColumn() + col);
         }
     }

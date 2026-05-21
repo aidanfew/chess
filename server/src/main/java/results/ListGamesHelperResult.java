@@ -9,7 +9,10 @@ public record ListGamesHelperResult(Integer gameID, String whiteUsername, String
             return false;
         }
         ListGamesHelperResult that = (ListGamesHelperResult) o;
-        return Objects.equals(gameID, that.gameID) && Objects.equals(gameName, that.gameName) && Objects.equals(whiteUsername, that.whiteUsername) && Objects.equals(blackUsername, that.blackUsername);
+        return Objects.equals(gameID, that.gameID) &&
+                Objects.equals(gameName, that.gameName) &&
+                Objects.equals(whiteUsername, that.whiteUsername) &&
+                Objects.equals(blackUsername, that.blackUsername);
     }
 
     @Override

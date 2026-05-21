@@ -33,16 +33,6 @@ public class GameDAO {
         gameMap.replace(gameID, oldData, newData);
     }
 
-    public void updateGame(int gameID, ChessGame newGame) {
-        GameData oldData = gameMap.get(gameID);
-        GameData newData = new GameData(oldData.gameID(),
-                oldData.whiteUsername(),
-                oldData.blackUsername(),
-                oldData.gameName(),
-                newGame);
-        gameMap.replace(gameID, oldData, newData);
-    }
-
     public Collection<ListGamesHelperResult> createHelperList() {
         ArrayList<ListGamesHelperResult> list = new ArrayList<>();
         for (GameData game : gameMap.values()) {
