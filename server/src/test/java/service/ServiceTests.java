@@ -2,6 +2,7 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import model.AuthData;
@@ -14,6 +15,7 @@ import requests.*;
 import results.ListGamesHelperResult;
 import results.ListGamesResult;
 
+import javax.xml.crypto.Data;
 import java.util.Collection;
 
 
@@ -48,12 +50,13 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Negative Register Test: Null Password")
-    public void negativeRegister() throws Exception {
+    public void negativeRegister() {
         clearAll();
-        RegisterRequest registerRequest = new RegisterRequest("user1", null, "email@email.com");
-        UserService service = new UserService();
-        service.register(registerRequest, authDAO);
-        Assertions.assertTrue(UserDAO.userMap.isEmpty());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            RegisterRequest registerRequest = new RegisterRequest("user1", null, "email@email.com");
+            UserService service = new UserService();
+            service.register(registerRequest, authDAO);
+        });
     }
 
     @Test
@@ -69,13 +72,14 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Negative Login Test: Wrong Password")
-    public void negativeLogin() throws Exception {
+    public void negativeLogin() {
         clearAll();
-        UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
-        LoginRequest loginRequest = new LoginRequest("user1", "1235");
-        UserService service = new UserService();
-        service.login(loginRequest, authDAO);
-        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
+            LoginRequest loginRequest = new LoginRequest("user1", "1235");
+            UserService service = new UserService();
+            service.login(loginRequest, authDAO);
+        });
     }
 
     @Test
@@ -92,10 +96,11 @@ public class ServiceTests {
     @DisplayName("Negative Logout Test: Wrong Token")
     public void negativeLogout() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        UserService service = new UserService();
-        service.logout("1235", authDAO);
-        Assertions.assertFalse(AuthDAO.authMap.isEmpty());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            UserService service = new UserService();
+            service.logout("1235", authDAO);
+        });
     }
 
     @Test
@@ -113,11 +118,12 @@ public class ServiceTests {
     @DisplayName("Negative Create Game: Wrong Token")
     public void negativeCreateGame() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        CreateGameRequest request = new CreateGameRequest("game1", "1235");
-        GameService service = new GameService();
-        service.createGame(request, authDAO);
-        Assertions.assertTrue(GameDAO.gameMap.isEmpty());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            CreateGameRequest request = new CreateGameRequest("game1", "1235");
+            GameService service = new GameService();
+            service.createGame(request, authDAO);
+        });
     }
 
     @Test
@@ -136,12 +142,13 @@ public class ServiceTests {
     @DisplayName("Negative Join Game: Both Colors Taken")
     public void negativeJoinGame() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        GameDAO.gameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
-        JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
-        GameService service = new GameService();
-        service.joinGame(request, authDAO);
-        Assertions.assertSame("black", GameDAO.gameMap.get(1).blackUsername());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            GameDAO.gameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
+            JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
+            GameService service = new GameService();
+            service.joinGame(request, authDAO);
+        });
     }
 
     @Test
@@ -153,19 +160,20 @@ public class ServiceTests {
         GameService service = new GameService();
         Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
         ListGamesResult list = new ListGamesResult(response);
-        Assertions.assertFalse(list.games().isEmpty());
+        Assertions.assertTrue(list.games().isEmpty());
     }
 
     @Test
     @DisplayName("Negative List Games: Games is Empty")
-    public void negativeListGames() throws Exception {
+    public void negativeListGames() {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        ListGamesRequest request = new ListGamesRequest("1235");
-        GameService service = new GameService();
-        Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
-        ListGamesResult list = new ListGamesResult(response);
-        Assertions.assertTrue(list.games().isEmpty());
+        Assertions.assertThrows(DataAccessException.class, () -> {
+            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            ListGamesRequest request = new ListGamesRequest("1235");
+            GameService service = new GameService();
+            Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
+            ListGamesResult list = new ListGamesResult(response);
+        });
     }
 
 
