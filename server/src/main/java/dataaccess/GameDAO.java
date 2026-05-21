@@ -7,7 +7,7 @@ import results.ListGamesHelperResult;
 import java.util.*;
 
 public class GameDAO {
-    Map<Integer, GameData> GameMap = new HashMap<>();
+    public static Map<Integer, GameData> GameMap = new HashMap<>();
     Integer gameID = 0;
 
     public void createGame(String gameName) {
@@ -54,19 +54,5 @@ public class GameDAO {
 
     public void clear() {
         GameMap.clear();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        GameDAO gameDAO = (GameDAO) o;
-        return Objects.equals(GameMap, gameDAO.GameMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(GameMap);
     }
 }

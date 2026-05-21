@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 public class AuthDAO {
-    Map<String, AuthData> AuthMap = new HashMap<>();
+    public static Map<String, AuthData> AuthMap = new HashMap<>();
 
     public static String generateToken() {
         return UUID.randomUUID().toString();
@@ -27,19 +27,5 @@ public class AuthDAO {
 
     public void clear() {
         AuthMap.clear();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        AuthDAO authDAO = (AuthDAO) o;
-        return Objects.equals(AuthMap, authDAO.AuthMap);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(AuthMap);
     }
 }
