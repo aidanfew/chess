@@ -12,7 +12,7 @@ import java.sql.*;
 public class MySqlDataAccess {
     private Connection connection;
 
-    public MySqlDataAccess() throws HttpResponseException {
+    public MySqlDataAccess() throws SQLException {
         configureDatabase();
     }
 
@@ -54,9 +54,12 @@ public class MySqlDataAccess {
     public UserData getSqlUSer(String username) {
         String sql = "SELECT username, password, email FROM users WHERE username=?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
+            return new UserData(rs.getString(1), rs.getString(2), rs.getString(3));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-    }
     }
 
 
