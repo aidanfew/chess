@@ -19,13 +19,24 @@ public class DatabaseManager {
     /**
      * Creates the database if it does not already exist.
      */
+
+
     static public void createDatabase() throws DataAccessException {
         var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
         try (var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException("failed to create database", ex);
+            String[] createStatements = {
+                    "CREATE TABLE IF NOT EXISTS users (username VARCHAR(256) NOT NULL, password VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, PRIMARY KEY (username) );",
+                    "CREATE TABLE IF NOT EXISTS games (gameID INT NOT NULL AUTO_INCREMENT, whiteUsername VARCHAR(256) NOT NULL, blackUsername VARCHAR(256) NOT NULL, gameName VARCHAR(256) NOT NULL, game LONGTEXT NOT NULL, PRIMARY KEY (gameID) );",
+                    "CREATE TABLE IF NOT EXISTS auths (authToken INT NOT NULL, username VARCHAR(256) NOT NULL, PRIMARY KEY (authToken) );"
+            };
+            for (String newStatement : createStatements) {
+                var newPreparedStatement = conn.prepareStatement(newStatement);
+                newPreparedStatement.executeUpdate();
+            }
+        } catch (Exception ex) {
+            throw new DataAccessException("failed to create database", 500);
         }
     }
 
@@ -48,7 +59,7 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to get connection", ex);
+            throw new DataAccessException("failed to get connection", 500);
         }
     }
 

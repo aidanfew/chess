@@ -1,13 +1,9 @@
 package service;
 
-import com.google.gson.JsonArray;
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import requests.LoginRequest;
-import requests.LogoutRequest;
 import requests.RegisterRequest;
 import results.LoginResult;
 import results.LogoutResult;
@@ -16,10 +12,10 @@ import results.RegisterResult;
 import java.util.Objects;
 
 public class UserService {
-    UserDAO user = new UserDAO();
+    UserSqlDAO user = new UserSqlDAO();
 
 
-    public RegisterResult register(RegisterRequest registerRequest, AuthDAO authDAO) throws Exception {
+    public RegisterResult register(RegisterRequest registerRequest, AuthSqlDAO authDAO) throws Exception {
         String username = registerRequest.username();
         String password = registerRequest.password();
         String email = registerRequest.email();
@@ -43,9 +39,9 @@ public class UserService {
     }
 
 
-    public LoginResult login(LoginRequest loginRequest, AuthDAO authDAO) throws Exception {
+    public LoginResult login(LoginRequest loginRequest, AuthSqlDAO authDAO) throws Exception {
         String username = loginRequest.username();
-        String password = loginRequest.password();
+        String password = user.hashUserPassword(loginRequest.password());
         if (Objects.equals(username, "") || Objects.equals(password, "") || username == null || password == null) {
             String message = "Error: bad request";
             throw new DataAccessException(message, 400);
@@ -64,7 +60,7 @@ public class UserService {
     }
 
 
-    public LogoutResult logout(String authToken, AuthDAO authDAO) throws Exception {
+    public LogoutResult logout(String authToken, AuthSqlDAO authDAO) throws Exception {
         if (authDAO.getAuth(authToken) != null) {
             authDAO.deleteAuth(authToken);
             return new LogoutResult();
@@ -74,7 +70,7 @@ public class UserService {
         }
     }
 
-    public void clear() {
+    public void clear() throws Exception {
         user.clear();
     }
 

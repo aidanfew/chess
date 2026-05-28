@@ -1,11 +1,12 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.AuthSqlDAO;
 
 public class ClearService {
-    public void clear(UserService userService, GameService gameService, AuthDAO authDAO) {
+    public void clear(UserService userService, GameService gameService, AuthSqlDAO authSqlDAO) throws Exception {
         userService.clear();
         gameService.clear();
-        authDAO.clear();
+        authSqlDAO.clear();
     }
 }

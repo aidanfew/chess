@@ -16,23 +16,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class GameSqlDAO {
-    private Connection connection;
+    private final Connection connection;
 
-    public GameSqlDAO() throws Exception {
-        configureDatabase();
+    public GameSqlDAO() throws DataAccessException {
+        this.connection = DatabaseManager.getConnection();
     }
-
-    private final String[] createGameTable = {
-            """
-    CREATE TABLE IF NOT EXISTS games (
-    'gameID' INT NOT NULL AUTO_INCREMENT,
-    'whiteUsername' VARCHAR(256) NOT NULL,
-    'blackUsername' VARCHAR(256) NOT NULL,
-    'gameName' VARCHAR(256) NOT NULL,
-    'game' CHESS GAME NOT NULL,
-    PRIMARY KEY (gameID) )
-"""
-    };
 
     public void createGame(String gameName) throws Exception {
         String sql = "INSERT INTO games (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
@@ -44,6 +32,10 @@ public class GameSqlDAO {
             String jsonGame = serializer.toJson(new ChessGame());
             stmt.setString(4, jsonGame);
             stmt.executeUpdate();
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
     }
 
@@ -53,6 +45,10 @@ public class GameSqlDAO {
             ResultSet rs = stmt.executeQuery();
             rs.next();
             return rs.getInt(1);
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
     }
 
@@ -65,6 +61,10 @@ public class GameSqlDAO {
             var serializer = new Gson();
             ChessGame game = serializer.fromJson(chessGame, ChessGame.class);
             return new GameData(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), game);
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
     }
 
@@ -76,6 +76,10 @@ public class GameSqlDAO {
             String newChessGame = serializer.toJson(newData.game());
             stmt.setString(5, newChessGame);
             stmt.executeUpdate(sql);
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
     }
 
@@ -91,18 +95,22 @@ public class GameSqlDAO {
                 String gameName = rs.getString(4);
                 list.add(new ListGamesHelperResult(gameID, whiteUsername, blackUsername, gameName));
             }
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
         return list;
     }
 
-    private void configureDatabase() throws Exception {
-        DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement : createGameTable) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
+    public void clear() throws Exception{
+        String sql = "DROP TABLE games";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.executeUpdate();
+        } catch (Exception e) {
+            String message = "Error: Connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
         }
     }
 }

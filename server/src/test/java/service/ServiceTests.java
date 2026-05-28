@@ -1,10 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -22,16 +19,16 @@ import java.util.Collection;
 public class ServiceTests {
     UserService user = new UserService();
     GameService game = new GameService();
-    AuthDAO authDAO = new AuthDAO();
+    AuthSqlDAO authDAO = new AuthSqlDAO();
 
-    public void clearAll() {
+    public void clearAll() throws Exception {
         ClearService cleared = new ClearService();
         cleared.clear(user, game, authDAO);
     }
 
     @Test
     @DisplayName("Test Clear")
-    public void clearAllSuccess() {
+    public void clearAllSuccess() throws Exception {
         clearAll();
         Assertions.assertTrue(AuthDAO.authMap.isEmpty());
         Assertions.assertTrue(UserDAO.userMap.isEmpty());
@@ -50,7 +47,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Negative Register Test: Null Password")
-    public void negativeRegister() {
+    public void negativeRegister() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
             RegisterRequest registerRequest = new RegisterRequest("user1", null, "email@email.com");
@@ -72,7 +69,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Negative Login Test: Wrong Password")
-    public void negativeLogin() {
+    public void negativeLogin() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
             UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
@@ -165,7 +162,7 @@ public class ServiceTests {
 
     @Test
     @DisplayName("Negative List Games: Games is Empty")
-    public void negativeListGames() {
+    public void negativeListGames() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
             AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));

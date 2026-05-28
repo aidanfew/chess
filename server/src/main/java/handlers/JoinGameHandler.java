@@ -2,23 +2,21 @@ package handlers;
 
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
+import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
-import org.eclipse.jetty.server.Authentication;
-import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import service.GameService;
-import service.UserService;
 
 import java.util.Objects;
 
 public class JoinGameHandler implements Handler {
     private final GameService gameService;
-    private final AuthDAO authDAO;
-    public JoinGameHandler(GameService gameService, AuthDAO authDAO) {
+    private final AuthSqlDAO authSqlDAO;
+    public JoinGameHandler(GameService gameService, AuthSqlDAO authSqlDAO) {
         this.gameService = gameService;
-        this.authDAO = authDAO;
+        this.authSqlDAO = authSqlDAO;
     }
     public void handle(Context ctx) throws Exception {
         var serializer = new Gson();
@@ -27,7 +25,7 @@ public class JoinGameHandler implements Handler {
         JoinGameRequest gameInfoRequest = serializer.fromJson(gameInfo, JoinGameRequest.class);
         JoinGameRequest request = new JoinGameRequest(authToken, gameInfoRequest.playerColor(), gameInfoRequest.gameID());
         try {
-            gameService.joinGame(request, authDAO);
+            gameService.joinGame(request, authSqlDAO);
             ctx.result("{}");
         } catch (DataAccessException e) {
             SharedHandlerMethods.catchException(e, ctx);
@@ -40,11 +38,11 @@ public class JoinGameHandler implements Handler {
             return false;
         }
         JoinGameHandler that = (JoinGameHandler) o;
-        return Objects.equals(gameService, that.gameService) && Objects.equals(authDAO, that.authDAO);
+        return Objects.equals(gameService, that.gameService) && Objects.equals(authSqlDAO, that.authSqlDAO);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gameService, authDAO);
+        return Objects.hash(gameService, authSqlDAO);
     }
 }

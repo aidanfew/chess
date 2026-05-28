@@ -1,25 +1,20 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
+import dataaccess.*;
 import model.GameData;
 import requests.CreateGameRequest;
 import requests.JoinGameRequest;
 import requests.ListGamesRequest;
 import results.CreateGameResult;
-import results.JoinGameResult;
 import results.ListGamesHelperResult;
-import results.ListGamesResult;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
 public class GameService {
-    GameDAO game = new GameDAO();
+    GameSqlDAO game = new GameSqlDAO();
 
-    public CreateGameResult createGame(CreateGameRequest createGameRequest, AuthDAO authDAO) throws Exception {
+    public CreateGameResult createGame(CreateGameRequest createGameRequest, AuthSqlDAO authDAO) throws Exception {
         String gameName = createGameRequest.gameName();
         String authToken = createGameRequest.authToken();
         if (Objects.equals(gameName, "") || gameName == null || Objects.equals(authToken, "") || authToken == null) {
@@ -39,7 +34,7 @@ public class GameService {
         }
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, AuthDAO authDAO) throws Exception {
+    public void joinGame(JoinGameRequest joinGameRequest, AuthSqlDAO authDAO) throws Exception {
         String playerColor = joinGameRequest.playerColor();
         String authToken = joinGameRequest.authToken();
         Integer gameID = joinGameRequest.gameID();
@@ -74,7 +69,7 @@ public class GameService {
         }
     }
 
-    public Collection<ListGamesHelperResult> listGames(ListGamesRequest listGamesRequest, AuthDAO authDAO) throws Exception {
+    public Collection<ListGamesHelperResult> listGames(ListGamesRequest listGamesRequest, AuthSqlDAO authDAO) throws Exception {
         if (!SharedServices.userVerified(listGamesRequest.authToken(), authDAO)) {
             String message = "Error: unauthorized";
             throw new DataAccessException(message, 401);
@@ -82,7 +77,7 @@ public class GameService {
         return game.createHelperList();
     }
 
-    public void clear() {
+    public void clear() throws Exception {
         game.clear();
     }
 

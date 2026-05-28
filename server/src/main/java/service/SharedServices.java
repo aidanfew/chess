@@ -1,16 +1,14 @@
 package service;
 
-import dataaccess.AuthDAO;
+import dataaccess.AuthSqlDAO;
 import model.UserData;
-
-import java.util.Objects;
 
 public class SharedServices {
     public static boolean passwordCorrect(String password, UserData userData) {
         return userData.password().equals(password);
     }
 
-    public static boolean userVerified(String authToken, AuthDAO authDAO) {
+    public static boolean userVerified(String authToken, AuthSqlDAO authDAO) throws Exception {
         return authDAO.getAuth(authToken) != null;
     }
 

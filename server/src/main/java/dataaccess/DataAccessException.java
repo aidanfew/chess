@@ -2,7 +2,7 @@ package dataaccess;
 
 import java.util.Objects;
 
-public class DataAccessException extends RuntimeException {
+public class DataAccessException extends Exception {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {

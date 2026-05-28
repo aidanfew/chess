@@ -1,7 +1,7 @@
 package handlers;
 
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
+import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -9,16 +9,15 @@ import org.jetbrains.annotations.NotNull;
 import requests.CreateGameRequest;
 import results.CreateGameResult;
 import service.GameService;
-import service.UserService;
 
 import java.util.Objects;
 
 public class CreateGameHandler implements Handler {
     private final GameService gameService;
-    private final AuthDAO authDAO;
-    public CreateGameHandler(GameService gameService, AuthDAO authDAO) {
+    private final AuthSqlDAO authSqlDAO;
+    public CreateGameHandler(GameService gameService, AuthSqlDAO authSqlDAO) {
         this.gameService = gameService;
-        this.authDAO = authDAO;
+        this.authSqlDAO = authSqlDAO;
     }
 
     public void handle(@NotNull Context ctx) throws Exception {
@@ -28,7 +27,7 @@ public class CreateGameHandler implements Handler {
         CreateGameRequest gameNameRequest = serializer.fromJson(gameName, CreateGameRequest.class);
         CreateGameRequest request = new CreateGameRequest(gameNameRequest.gameName(), authToken);
         try {
-            CreateGameResult response = gameService.createGame(request, authDAO);
+            CreateGameResult response = gameService.createGame(request, authSqlDAO);
             String jsonResponse = serializer.toJson(response);
             ctx.result(jsonResponse);
         } catch (DataAccessException e) {
@@ -42,11 +41,11 @@ public class CreateGameHandler implements Handler {
             return false;
         }
         CreateGameHandler that = (CreateGameHandler) o;
-        return Objects.equals(gameService, that.gameService) && Objects.equals(authDAO, that.authDAO);
+        return Objects.equals(gameService, that.gameService) && Objects.equals(authSqlDAO, that.authSqlDAO);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(gameService, authDAO);
+        return Objects.hash(gameService, authSqlDAO);
     }
 }
