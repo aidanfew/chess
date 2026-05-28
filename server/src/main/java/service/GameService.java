@@ -14,6 +14,9 @@ import java.util.Objects;
 public class GameService {
     GameSqlDAO game = new GameSqlDAO();
 
+    public GameService() throws DataAccessException {
+    }
+
     public CreateGameResult createGame(CreateGameRequest createGameRequest, AuthSqlDAO authDAO) throws Exception {
         String gameName = createGameRequest.gameName();
         String authToken = createGameRequest.authToken();

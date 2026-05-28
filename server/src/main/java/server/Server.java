@@ -2,6 +2,7 @@ package server;
 
 import dataaccess.AuthDAO;
 import dataaccess.AuthSqlDAO;
+import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import handlers.*;
 import io.javalin.*;
@@ -15,26 +16,27 @@ public class Server {
     private final Javalin javalin;
 
     public Server() {
-        UserService userService = new UserService();
-        GameService gameService = new GameService();
-        AuthSqlDAO authSqlDAO = new AuthSqlDAO();
-        javalin = Javalin.create(config -> config.staticFiles.add("web"))
-                .delete("/db", new ClearHandler(userService, gameService, authSqlDAO))
-                .post("/user", new RegisterHandler(userService, authSqlDAO))
-                .post("/session", new LoginHandler(userService, authSqlDAO))
-                .delete("/session", new LogoutHandler(userService, authSqlDAO))
-                .post("/game", new CreateGameHandler(gameService, authSqlDAO))
-                .put("/game", new JoinGameHandler(gameService, authSqlDAO))
-                .get("/game", new ListGamesHandler(gameService, authSqlDAO));
+        AuthSqlDAO authSqlDAO;
+        UserService userService;
+        GameService gameService;
+        try {
+            authSqlDAO = new AuthSqlDAO();
+            userService = new UserService();
+            gameService = new GameService();
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+            javalin = Javalin.create(config -> config.staticFiles.add("web"))
+                    .delete("/db", new ClearHandler(userService, gameService, authSqlDAO))
+                    .post("/user", new RegisterHandler(userService, authSqlDAO))
+                    .post("/session", new LoginHandler(userService, authSqlDAO))
+                    .delete("/session", new LogoutHandler(userService, authSqlDAO))
+                    .post("/game", new CreateGameHandler(gameService, authSqlDAO))
+                    .put("/game", new JoinGameHandler(gameService, authSqlDAO))
+                    .get("/game", new ListGamesHandler(gameService, authSqlDAO));
     }
 
     public int run(int desiredPort) {
-        try {
-            DatabaseManager.createDatabase();
-        } catch (Exception e) {
-           e.printStackTrace();
-        }
-
         javalin.start(desiredPort);
         return javalin.port();
     }

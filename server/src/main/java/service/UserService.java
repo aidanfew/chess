@@ -14,6 +14,9 @@ import java.util.Objects;
 public class UserService {
     UserSqlDAO user = new UserSqlDAO();
 
+    public UserService() throws DataAccessException {
+    }
+
 
     public RegisterResult register(RegisterRequest registerRequest, AuthSqlDAO authDAO) throws Exception {
         String username = registerRequest.username();

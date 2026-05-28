@@ -14,6 +14,7 @@ public class AuthSqlDAO {
 
     public AuthSqlDAO() throws DataAccessException {
         this.connection = DatabaseManager.getConnection();
+        DatabaseManager.createDatabase();
     }
 
 

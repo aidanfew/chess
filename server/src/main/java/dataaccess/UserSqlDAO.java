@@ -12,8 +12,14 @@ import java.sql.*;
 public class UserSqlDAO {
     private final Connection connection;
 
-    public UserSqlDAO() throws Exception {
-        this.connection = DatabaseManager.getConnection();
+    public UserSqlDAO() throws DataAccessException {
+        try {
+            this.connection = DatabaseManager.getConnection();
+        } catch (Exception e) {
+            String message = "Error: connection error";
+            System.out.println(e);
+            throw new DataAccessException(message, 500);
+        }
     }
 
     public String hashUserPassword(String clearTextPassword) {
@@ -21,7 +27,7 @@ public class UserSqlDAO {
     }
 
 
-    public void createUser(UserData userData) throws Exception {
+    public void createUser(UserData userData) throws DataAccessException {
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = hashUserPassword(userData.password());
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -36,7 +42,7 @@ public class UserSqlDAO {
         }
     }
 
-    public UserData getUser(String username) throws Exception {
+    public UserData getUser(String username) throws DataAccessException {
         String sql = "SELECT username, password, email FROM users WHERE username=?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, username);
@@ -49,7 +55,7 @@ public class UserSqlDAO {
         }
     }
 
-    public void clear() throws Exception{
+    public void clear() throws DataAccessException {
         String sql = "DROP TABLE users";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.executeUpdate();
