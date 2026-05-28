@@ -16,9 +16,12 @@ import java.util.Collection;
 
 
 public class ServiceTests {
-    UserService user;
-    GameService game;
-    AuthSqlDAO authDAO;
+    UserService user = new UserService();
+    GameService game = new GameService();
+    AuthSqlDAO authDAO = new AuthSqlDAO();
+
+    public ServiceTests() throws DataAccessException {
+    }
 
 
     public void clearAll() throws Exception {
