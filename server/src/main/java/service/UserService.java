@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import requests.LoginRequest;
 import requests.RegisterRequest;
 import results.LoginResult;
@@ -44,16 +45,17 @@ public class UserService {
 
     public LoginResult login(LoginRequest loginRequest, AuthSqlDAO authDAO) throws Exception {
         String username = loginRequest.username();
-        String password = user.hashUserPassword(loginRequest.password());
+        String password = loginRequest.password();
+        UserData userData = user.getUser(loginRequest.username());
         if (Objects.equals(username, "") || Objects.equals(password, "") || username == null || password == null) {
             String message = "Error: bad request";
             throw new DataAccessException(message, 400);
         }
-        if (user.getUser(username) != null && SharedServices.passwordCorrect(password, user.getUser(username))) {
+        if (userData != null && BCrypt.checkpw(password, userData.password())) {
             String newToken = AuthDAO.generateToken();
             authDAO.createAuth(new AuthData(newToken, username));
             return new LoginResult(newToken, username);
-        } else if (user.getUser(username) == null || !SharedServices.passwordCorrect(password, user.getUser(username))) {
+        } else if (userData == null || !BCrypt.checkpw(password, userData.password())) {
             String message = "Error: unauthorized";
             throw new DataAccessException(message, 401);
         } else {

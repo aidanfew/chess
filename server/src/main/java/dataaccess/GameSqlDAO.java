@@ -57,10 +57,14 @@ public class GameSqlDAO {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, gameID);
             ResultSet rs = stmt.executeQuery();
-            String chessGame = rs.getString(5);
-            var serializer = new Gson();
-            ChessGame game = serializer.fromJson(chessGame, ChessGame.class);
-            return new GameData(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), game);
+            if (rs.next()) {
+                String chessGame = rs.getString(5);
+                var serializer = new Gson();
+                ChessGame game = serializer.fromJson(chessGame, ChessGame.class);
+                return new GameData(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), game);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             String message = "Error: Connection error";
             System.out.println(e);
@@ -69,13 +73,15 @@ public class GameSqlDAO {
     }
 
     public void replaceGame(Integer gameID, GameData oldData, GameData newData) throws Exception{
-        String sql = "UPDATE games SET game=? WHERE gameID=?";
+        String sql = "UPDATE games SET whiteUsername = ?, blackUsername = ?, game = ? WHERE gameID = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, gameID);
             var serializer = new Gson();
             String newChessGame = serializer.toJson(newData.game());
-            stmt.setString(5, newChessGame);
-            stmt.executeUpdate(sql);
+            stmt.setString(1, newData.whiteUsername());
+            stmt.setString(2, newData.blackUsername());
+            stmt.setString(3, newChessGame);
+            stmt.setInt(4, gameID);
+            stmt.executeUpdate();
         } catch (Exception e) {
             String message = "Error: Connection error";
             System.out.println(e);
@@ -104,7 +110,7 @@ public class GameSqlDAO {
     }
 
     public void clear() throws Exception{
-        String sql = "DROP TABLE games";
+        String sql = "TRUNCATE TABLE games";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.executeUpdate();
         } catch (Exception e) {
