@@ -79,7 +79,7 @@ public class GameSqlDAO {
         }
     }
 
-    public Collection<ListGamesHelperResult> createHelperList() {
+    public Collection<ListGamesHelperResult> createHelperList() throws Exception{
         ArrayList<ListGamesHelperResult> list = new ArrayList<>();
         String sql = "SELECT gameID, whiteUsername, blackUsername, gameName FROM games";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -95,12 +95,7 @@ public class GameSqlDAO {
         return list;
     }
 
-
-
-
-
-
-    private void configureDatabase() throws HttpResponseException {
+    private void configureDatabase() throws Exception {
         DatabaseManager.createDatabase();
         try (Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createGameTable) {
@@ -108,8 +103,6 @@ public class GameSqlDAO {
                     preparedStatement.executeUpdate();
                 }
             }
-        } catch (DataAccessException e) {
-
         }
     }
 }
