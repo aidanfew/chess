@@ -14,7 +14,6 @@ public class AuthSqlDAO {
     public AuthSqlDAO() throws DataAccessException {
     }
 
-
     public static String generateToken() { return UUID.randomUUID().toString(); }
 
     public void createAuth(AuthData authData) throws Exception {
