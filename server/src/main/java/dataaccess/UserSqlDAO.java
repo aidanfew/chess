@@ -47,7 +47,11 @@ public class UserSqlDAO {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, username);
             ResultSet rs = stmt.executeQuery();
-            return new UserData(rs.getString(1), rs.getString(2), rs.getString(3));
+            if (rs.next()) {
+                return new UserData(rs.getString(1), rs.getString(2), rs.getString(3));
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             String message = "Error: connection error";
             System.out.println(e);
@@ -56,7 +60,7 @@ public class UserSqlDAO {
     }
 
     public void clear() throws DataAccessException {
-        String sql = "DROP TABLE users";
+        String sql = "TRUNCATE TABLE users";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.executeUpdate();
         } catch (Exception e) {

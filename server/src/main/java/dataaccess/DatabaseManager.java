@@ -27,16 +27,17 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
             String[] createStatements = {
+                    "USE chess;",
                     "CREATE TABLE IF NOT EXISTS users (username VARCHAR(256) NOT NULL, password VARCHAR(256) NOT NULL, email VARCHAR(256) NOT NULL, PRIMARY KEY (username) );",
-                    "CREATE TABLE IF NOT EXISTS games (gameID INT NOT NULL AUTO_INCREMENT, whiteUsername VARCHAR(256) NOT NULL, blackUsername VARCHAR(256) NOT NULL, gameName VARCHAR(256) NOT NULL, game LONGTEXT NOT NULL, PRIMARY KEY (gameID) );",
-                    "CREATE TABLE IF NOT EXISTS auths (authToken INT NOT NULL, username VARCHAR(256) NOT NULL, PRIMARY KEY (authToken) );"
+                    "CREATE TABLE IF NOT EXISTS games (gameID INT NOT NULL AUTO_INCREMENT, whiteUsername VARCHAR(256), blackUsername VARCHAR(256), gameName VARCHAR(256) NOT NULL, game LONGTEXT NOT NULL, PRIMARY KEY (gameID) );",
+                    "CREATE TABLE IF NOT EXISTS auths (authToken VARCHAR(256) NOT NULL, username VARCHAR(256) NOT NULL, PRIMARY KEY (authToken) );"
             };
             for (String newStatement : createStatements) {
                 var newPreparedStatement = conn.prepareStatement(newStatement);
                 newPreparedStatement.executeUpdate();
             }
         } catch (Exception ex) {
-            throw new DataAccessException("failed to create database", 500);
+            throw new DataAccessException(ex.getMessage(), 500);
         }
     }
 
@@ -63,26 +64,27 @@ public class DatabaseManager {
         }
     }
 
-    private static void loadPropertiesFromResources() {
-        try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
-            if (propStream == null) {
-                throw new Exception("Unable to load db.properties");
+
+        private static void loadPropertiesFromResources() {
+            try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
+                if (propStream == null) {
+                    throw new Exception("Unable to load db.properties");
+                }
+                Properties props = new Properties();
+                props.load(propStream);
+                loadProperties(props);
+            } catch (Exception ex) {
+                throw new RuntimeException("unable to process db.properties", ex);
             }
-            Properties props = new Properties();
-            props.load(propStream);
-            loadProperties(props);
-        } catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties", ex);
+        }
+
+        private static void loadProperties (Properties props){
+            databaseName = props.getProperty("db.name");
+            dbUsername = props.getProperty("db.user");
+            dbPassword = props.getProperty("db.password");
+
+            var host = props.getProperty("db.host");
+            var port = Integer.parseInt(props.getProperty("db.port"));
+            connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
         }
     }
-
-    private static void loadProperties(Properties props) {
-        databaseName = props.getProperty("db.name");
-        dbUsername = props.getProperty("db.user");
-        dbPassword = props.getProperty("db.password");
-
-        var host = props.getProperty("db.host");
-        var port = Integer.parseInt(props.getProperty("db.port"));
-        connectionUrl = String.format("jdbc:mysql://%s:%d", host, port);
-    }
-}

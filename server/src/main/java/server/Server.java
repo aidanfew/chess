@@ -20,6 +20,7 @@ public class Server {
         UserService userService;
         GameService gameService;
         try {
+            DatabaseManager.createDatabase();
             authSqlDAO = new AuthSqlDAO();
             userService = new UserService();
             gameService = new GameService();
