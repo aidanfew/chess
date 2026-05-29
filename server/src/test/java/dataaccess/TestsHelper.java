@@ -14,6 +14,7 @@ public class TestsHelper {
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
             int count = rs.getInt(1);
+            System.out.println(count);
             if (count == 0) {
                 return true;
             }

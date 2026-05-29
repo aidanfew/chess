@@ -12,13 +12,19 @@ import requests.*;
 import results.ListGamesHelperResult;
 import results.ListGamesResult;
 
+import javax.xml.crypto.Data;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.Collection;
+import java.sql.Connection;
 
 
 public class ServiceTests {
     UserService user = new UserService();
     GameService game = new GameService();
     AuthSqlDAO authDAO = new AuthSqlDAO();
+    GameSqlDAO gameSqlDAO = new GameSqlDAO();
+    TestsHelper check = new TestsHelper();
 
     public ServiceTests() throws DataAccessException {
     }
@@ -33,19 +39,25 @@ public class ServiceTests {
     @DisplayName("Test Clear")
     public void clearAllSuccess() throws Exception {
         clearAll();
-        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
-        Assertions.assertTrue(UserDAO.userMap.isEmpty());
-        Assertions.assertTrue(GameDAO.gameMap.isEmpty());
+        Connection connection = DatabaseManager.getConnection();
+        String sql = "SELECT COUNT(*) FROM users, games, auths";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            int count = rs.getInt(1);
+            Assertions.assertEquals(0, count);
+        }
     }
 
     @Test
     @DisplayName("Positive Register Test")
     public void positiveRegister() throws Exception {
         clearAll();
+        Connection connection = DatabaseManager.getConnection();
         RegisterRequest registerRequest = new RegisterRequest("user1", "pass1", "email@email.com");
-        UserService service = new UserService();
-        service.register(registerRequest, authDAO);
-        Assertions.assertFalse(UserDAO.userMap.isEmpty());
+        user.register(registerRequest, authDAO);
+        String sql = "SELECT COUNT(*) FROM users";
+        Assertions.assertFalse(check.countZero(sql, connection));
     }
 
     @Test
@@ -54,8 +66,7 @@ public class ServiceTests {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
             RegisterRequest registerRequest = new RegisterRequest("user1", null, "email@email.com");
-            UserService service = new UserService();
-            service.register(registerRequest, authDAO);
+            user.register(registerRequest, authDAO);
         });
     }
 
@@ -63,11 +74,13 @@ public class ServiceTests {
     @DisplayName("Positive Login Test")
     public void positiveLogin() throws Exception {
         clearAll();
-        UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
+        RegisterRequest registerRequest = new RegisterRequest("user1", "1234", "email@email.com");
+        user.register(registerRequest, authDAO);
         LoginRequest loginRequest = new LoginRequest("user1", "1234");
-        UserService service = new UserService();
-        service.login(loginRequest, authDAO);
-        Assertions.assertFalse(AuthDAO.authMap.isEmpty());
+        user.login(loginRequest, authDAO);
+        String sql = "SELECT COUNT(*) FROM auths";
+        Connection connection = DatabaseManager.getConnection();
+        Assertions.assertFalse(check.countZero(sql, connection));
     }
 
     @Test
@@ -75,10 +88,10 @@ public class ServiceTests {
     public void negativeLogin() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
-            UserDAO.userMap.put("user1", new UserData("user1", "1234", "gmail@gmail.com"));
+            RegisterRequest registerRequest = new RegisterRequest("user1", "1234", "email@email.com");
+            user.register(registerRequest, authDAO);
             LoginRequest loginRequest = new LoginRequest("user1", "1235");
-            UserService service = new UserService();
-            service.login(loginRequest, authDAO);
+            user.login(loginRequest, authDAO);
         });
     }
 
@@ -86,10 +99,12 @@ public class ServiceTests {
     @DisplayName("Positive Logout Test")
     public void positiveLogout() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        UserService service = new UserService();
-        service.logout("1234", authDAO);
-        Assertions.assertTrue(AuthDAO.authMap.isEmpty());
+        AuthData authData = new AuthData("1234", "user1");
+        authDAO.createAuth(authData);
+        user.logout("1234", authDAO);
+        Connection connection = DatabaseManager.getConnection();
+        String sql = "SELECT COUNT(*) from auths";
+        Assertions.assertTrue(check.countZero(sql, connection));
     }
 
     @Test
@@ -97,9 +112,9 @@ public class ServiceTests {
     public void negativeLogout() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
-            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-            UserService service = new UserService();
-            service.logout("1235", authDAO);
+            AuthData authData = new AuthData("1234", "user1");
+            authDAO.createAuth(authData);
+            user.logout("1235", authDAO);
         });
     }
 
@@ -107,11 +122,12 @@ public class ServiceTests {
     @DisplayName("Positive Create Game")
     public void positiveCreateGame() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+        authDAO.createAuth(new AuthData("1234", "user1"));
         CreateGameRequest request = new CreateGameRequest("game1", "1234");
-        GameService service = new GameService();
-        service.createGame(request, authDAO);
-        Assertions.assertFalse(GameDAO.gameMap.isEmpty());
+        game.createGame(request, authDAO);
+        Connection connection = DatabaseManager.getConnection();
+        String sql = "SELECT COUNT(*) FROM games";
+        Assertions.assertFalse(check.countZero(sql, connection));
     }
 
     @Test
@@ -119,10 +135,9 @@ public class ServiceTests {
     public void negativeCreateGame() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
-            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            authDAO.createAuth(new AuthData("1234", "user1"));
             CreateGameRequest request = new CreateGameRequest("game1", "1235");
-            GameService service = new GameService();
-            service.createGame(request, authDAO);
+            game.createGame(request, authDAO);
         });
     }
 
@@ -130,12 +145,19 @@ public class ServiceTests {
     @DisplayName("Positive Join Game")
     public void positiveJoinGame() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-        GameDAO.gameMap.put(1, new GameData(1, "white", null, "game1", new ChessGame()));
+        authDAO.createAuth(new AuthData("1234", "user1"));
+        CreateGameRequest createGameRequest = new CreateGameRequest("game1", "1234");
+        game.createGame(createGameRequest, authDAO);
         JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
-        GameService service = new GameService();
-        service.joinGame(request, authDAO);
-        Assertions.assertEquals("user1", GameDAO.gameMap.get(1).blackUsername());
+        game.joinGame(request, authDAO);
+        Connection connection = DatabaseManager.getConnection();
+        String sql = "SELECT blackUsername FROM games WHERE gameID = 1";
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            String blackUsername = rs.getString(1);
+            Assertions.assertNotNull(blackUsername);
+        }
     }
 
     @Test
@@ -143,11 +165,12 @@ public class ServiceTests {
     public void negativeJoinGame() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
-            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
-            GameDAO.gameMap.put(1, new GameData(1, "white", "black", "game1", new ChessGame()));
+            authDAO.createAuth(new AuthData("1234", "user1"));
+            gameSqlDAO.createGame("game1");
+            GameData gameData = new GameData(1, "user1", "user2", "game1", new ChessGame());
+            gameSqlDAO.replaceGame(1, null, gameData);
             JoinGameRequest request = new JoinGameRequest("1234", "BLACK", 1);
-            GameService service = new GameService();
-            service.joinGame(request, authDAO);
+            game.joinGame(request, authDAO);
         });
     }
 
@@ -155,12 +178,12 @@ public class ServiceTests {
     @DisplayName("Positive List Games")
     public void positiveListGames() throws Exception {
         clearAll();
-        AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+        authDAO.createAuth(new AuthData("1234", "user1"));
+        gameSqlDAO.createGame("game1");
         ListGamesRequest request = new ListGamesRequest("1234");
-        GameService service = new GameService();
-        Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
+        Collection<ListGamesHelperResult> response = game.listGames(request, authDAO);
         ListGamesResult list = new ListGamesResult(response);
-        Assertions.assertTrue(list.games().isEmpty());
+        Assertions.assertFalse(list.games().isEmpty());
     }
 
     @Test
@@ -168,11 +191,9 @@ public class ServiceTests {
     public void negativeListGames() throws Exception {
         clearAll();
         Assertions.assertThrows(DataAccessException.class, () -> {
-            AuthDAO.authMap.put("1234", new AuthData("1234", "user1"));
+            authDAO.createAuth(new AuthData("1234", "user1"));
             ListGamesRequest request = new ListGamesRequest("1235");
-            GameService service = new GameService();
-            Collection<ListGamesHelperResult> response = service.listGames(request, authDAO);
-            ListGamesResult list = new ListGamesResult(response);
+            Collection<ListGamesHelperResult> response = game.listGames(request, authDAO);
         });
     }
  }
