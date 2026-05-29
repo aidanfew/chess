@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
@@ -7,6 +8,7 @@ import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import results.ListGamesHelperResult;
 import service.ClearService;
 import service.GameService;
 import service.UserService;
@@ -16,6 +18,8 @@ import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class SqlDAOTests {
     UserService user = new UserService();
@@ -188,6 +192,68 @@ public class SqlDAOTests {
     @DisplayName("getGame Positive Test")
     public void positiveGetGame() throws Exception {
         clearAll();
+        gameSqlDAO.createGame("game1");
+        GameData gameData = gameSqlDAO.getGame(1);
+        Assertions.assertNotNull(gameData);
+    }
 
+    @Test
+    @DisplayName("getGame Negative Test")
+    public void negativeGetGame() throws Exception {
+        clearAll();
+        gameSqlDAO.createGame("game1");
+        GameData gameData = gameSqlDAO.getGame(2);
+        Assertions.assertNull(gameData);
+    }
+
+    @Test
+    @DisplayName("replaceGame Positive Test")
+    public void positiveReplaceGame() throws Exception {
+        clearAll();
+        gameSqlDAO.createGame("game1");
+        GameData newData = new GameData(1, "user1", null, "game1", new ChessGame());
+        gameSqlDAO.replaceGame(1, null, newData);
+        String sql = "SELECT whiteUsername FROM games WHERE gameID = 1";
+        Connection connection = DatabaseManager.getConnection();
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            String whiteUsername = rs.getString(1);
+            Assertions.assertEquals("user1", whiteUsername);
+        }
+    }
+
+    @Test
+    @DisplayName("replaceGame Negative Test")
+    public void negativeReplaceGame() throws Exception {
+        clearAll();
+        gameSqlDAO.createGame("game1");
+        GameData newData = new GameData(1, "user1", null, "game1", new ChessGame());
+        gameSqlDAO.replaceGame(2, null, newData);
+        String sql = "SELECT whiteUsername FROM games WHERE gameID = 1";
+        Connection connection = DatabaseManager.getConnection();
+        PreparedStatement stmt = connection.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            String whiteUsername = rs.getString(1);
+            Assertions.assertNull(whiteUsername);
+        }
+    }
+
+    @Test
+    @DisplayName("createHelperList Positive Test")
+    public void positiveCreateHelperList() throws Exception {
+        clearAll();
+        gameSqlDAO.createGame("game1");
+        Collection<ListGamesHelperResult> list = gameSqlDAO.createHelperList();
+        Assertions.assertFalse(list.isEmpty());
+    }
+
+    @Test
+    @DisplayName("createHelperList Negative Test")
+    public void negativeCreateHelperList() throws Exception {
+        clearAll();
+        Collection<ListGamesHelperResult> list = gameSqlDAO.createHelperList();
+        Assertions.assertTrue(list.isEmpty());
     }
 }
