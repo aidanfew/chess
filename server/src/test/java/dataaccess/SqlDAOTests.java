@@ -4,7 +4,6 @@ import chess.ChessGame;
 import model.AuthData;
 import model.GameData;
 import model.UserData;
-import org.eclipse.jetty.server.Authentication;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,13 +11,10 @@ import results.ListGamesHelperResult;
 import service.ClearService;
 import service.GameService;
 import service.UserService;
-import dataaccess.TestsHelper;
 
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.Collection;
 
 public class SqlDAOTests {

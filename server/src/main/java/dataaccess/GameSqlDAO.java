@@ -2,13 +2,9 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import com.mysql.cj.x.protobuf.MysqlxPrepare;
-import io.javalin.http.HttpResponseException;
 import model.GameData;
 import results.ListGamesHelperResult;
-import service.GameService;
 
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -1,7 +1,6 @@
 package handlers;
 
 import com.google.gson.Gson;
-import dataaccess.AuthDAO;
 import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import io.javalin.http.Context;
