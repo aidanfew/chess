@@ -1,7 +1,6 @@
 package ui;
 
-import com.google.gson.Gson;
-import requests.LoginRequest;
+import server.ServerFacade;
 
 import java.util.ArrayList;
 
@@ -27,9 +26,9 @@ public class PreloginUI {
     }
 
     public void login(String username, String password) {
-        LoginRequest loginRequest = new LoginRequest(username, password);
-        var serializer = new Gson();
-        String json = serializer.toJson(loginRequest);
+        ServerFacade facade = new ServerFacade();
+        facade.facadeLogin(username, password);
+
 
     }
 
