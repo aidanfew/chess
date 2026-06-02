@@ -1,9 +1,10 @@
 package server;
 
 import com.google.gson.Gson;
-import requests.LoginRequest;
+import requests.LoginRequest;import results.LoginResult;import results.LogoutResult;
 
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -20,28 +21,11 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public String facadeLogin(String username, String password) throws Exception {
-
-
-//        LoginRequest loginRequest = new LoginRequest(username, password);
-//        var serializer = new Gson();
-//        String json = serializer.toJson(loginRequest);
-//
-//        String host = "localhost";
-//        int port = 8080;
-//        String path = "/session";
-//
-//        String urlString = String.format(Locale.getDefault(), "http://%s:%d%s", host, port, path);
-//        HttpRequest  request = HttpRequest.newBuilder()
-//                .uri(new URI(urlString))
-//                .POST(BodyPublishers.ofString(json))
-//                .build();
-//        HttpResponse<String> httpResponse = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-//        if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-//            return httpResponse.body();
-//        } else {
-//            return "Error: received status code " + httpResponse.statusCode();
-//        }
+     public LoginResult facadeLogin(String username, String password) throws Exception {
+        LoginRequest body = new LoginRequest(username, password);
+        var request = buildRequest("POST", "/session", makeRequestBody(body));
+        var response = sendRequest(request);
+        return handleResponse(response, LoginResult.class);
     }
 
     private HttpRequest buildRequest(String method, String path, Object body) {
@@ -67,7 +51,6 @@ public class ServerFacade {
             return client.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-
         }
     }
 
