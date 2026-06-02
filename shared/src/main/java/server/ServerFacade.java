@@ -33,8 +33,7 @@ public class ServerFacade {
 
     public RegisterResult facadeRegister(String username, String password, String email) throws ResponseException {
         RegisterRequest registerRequest = new RegisterRequest(username, password, email);
-        Object body = makeRequestBody(registerRequest);
-        var request = buildRequest("POST", "/user", body);
+        var request = buildRequest("POST", "/user", registerRequest);
         var response = sendRequest(request);
         return handleResponse(response, RegisterResult.class);
     }
@@ -63,7 +62,7 @@ public class ServerFacade {
         try {
             return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ResponseException.Code.ServerError, "other failure");
         }
     }
 

@@ -86,7 +86,7 @@ public class ChessClient {
                     \u001B[34mhelp\u001B[0m - for possible commands
                     """;
         } else {
-            return null;
+            return "";
         }
     }
 
