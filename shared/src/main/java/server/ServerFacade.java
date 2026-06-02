@@ -1,15 +1,17 @@
 package server;
 
 import com.google.gson.Gson;
-import requests.LoginRequest;import results.LoginResult;import results.LogoutResult;
+import requests.LoginRequest;import requests.RegisterRequest;import results.LoginResult;import results.LogoutResult;
 
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpRequest.BodyPublisher;
+import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpResponse;
+import exception.ResponseException;import results.RegisterResult;
 import java.util.Locale;
 
 
@@ -21,12 +23,23 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-     public LoginResult facadeLogin(String username, String password) throws Exception {
-        LoginRequest body = new LoginRequest(username, password);
-        var request = buildRequest("POST", "/session", makeRequestBody(body));
+     public LoginResult facadeLogin(String username, String password) throws ResponseException {
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        Object body = makeRequestBody(loginRequest);
+        var request = buildRequest("POST", "/session", body);
         var response = sendRequest(request);
         return handleResponse(response, LoginResult.class);
     }
+
+    public RegisterResult facadeRegister(String username, String password, String email) throws ResponseException {
+        RegisterRequest registerRequest = new RegisterRequest(username, password, email);
+        Object body = makeRequestBody(registerRequest);
+        var request = buildRequest("POST", "/user", body);
+        var response = sendRequest(request);
+        return handleResponse(response, RegisterResult.class);
+    }
+
+
 
     private HttpRequest buildRequest(String method, String path, Object body) {
         var request = HttpRequest.newBuilder()
@@ -38,9 +51,9 @@ public class ServerFacade {
         return request.build();
     }
 
-    private HttpRequest.BodyPublisher makeRequestBody(Object request) {
+    private BodyPublisher makeRequestBody(Object request) {
         if (request != null) {
-            return HttpRequest.BodyPublishers.ofString(new Gson().toJson(request));
+            return BodyPublishers.ofString(new Gson().toJson(request));
         } else {
             return BodyPublishers.noBody();
         }
@@ -48,7 +61,7 @@ public class ServerFacade {
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
         try {
-            return client.send(request, HttpResponse.BodyHandlers.ofString());
+            return client.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
@@ -62,7 +75,7 @@ public class ServerFacade {
                 throw ResponseException.fromJson(body);
             }
 
-            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + stauts);
+            throw new ResponseException(ResponseException.fromHttpStatusCode(status), "other failure: " + status);
         }
 
         if (responseClass != null) {

@@ -1,5 +1,8 @@
 package client;
 
+import exception.ResponseException;
+import results.LoginResult;
+import results.RegisterResult;
 import server.ServerFacade;
 
 import java.util.ArrayList;
@@ -16,7 +19,7 @@ public class ChessClient {
     }
 
     public void run() {
-        System.out.print("Welcome to 240 chess. Log in to get started.\n");
+        System.out.print("Welcome to 240 chess. Log in or register to get started.\n");
         System.out.print(help());
 
         Scanner scanner = new Scanner(System.in);
@@ -28,12 +31,16 @@ public class ChessClient {
 
             try {
                 result = eval(line);
+                System.out.print(result);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.print(msg);
             }
         }
     }
 
     private void printPrompt() {
-        System.out.print("\n\u001B[0m>>>\033[32m)
+        System.out.print("\n\u001B[0m>>> \033[32m");
     }
 
     public String eval(String input) {
@@ -44,15 +51,30 @@ public class ChessClient {
             return switch (cmd) {
                 case "login" -> login(params);
                 case "register" -> register(params);
-            }
+                case "quit" -> "quit";
+                default -> help();
+            };
+        } catch (ResponseException ex) {
+            return ex.getMessage();
         }
     }
 
-    public String login(String... params) {
-        if (params.length >= 1) {
+    public String login(String... params) throws ResponseException {
+        if (params.length >= 2) {
             state = State.SIGNEDIN;
-
+            LoginResult result = server.facadeLogin(params[0], params[1]);
+            return String.format("You signed in as %s", result.username());
         }
+        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mExpected: <your_username> <your_password>\u001B[0m");
+    }
+
+    public String register(String... params) throws ResponseException {
+        if (params.length >= 3) {
+            state = State.SIGNEDIN;
+            RegisterResult result = server.facadeRegister(params[0], params[1], params[2]);
+            return String.format("You have successfully registered as %s", result.username());
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <username> <password> <email>\u001B[0m");
     }
 
     public String help() {
@@ -64,15 +86,13 @@ public class ChessClient {
                     \u001B[34mhelp\u001B[0m - for possible commands
                     """;
         } else {
-            return """
-                    
-                    """
+            return null;
         }
     }
 
-    private void assertSignedIn() {
+    private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
-            throw Exception; ***
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mYou must sign in");
         }
     }
 }
