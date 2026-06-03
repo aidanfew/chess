@@ -14,6 +14,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpResponse;
 import exception.ResponseException;
 import java.util.Locale;
+import java.util.Objects;
 
 
 public class ServerFacade {
@@ -66,7 +67,15 @@ public class ServerFacade {
                 .uri(URI.create(serverUrl + path))
                 .method(method, makeRequestBody(body));
         if (body != null) {
-            request.setHeader("Content-Type","application/json");
+            if (Objects.equals(body.getClass(), LogoutRequest.class)) {
+                request.setHeader("authorization", ((LogoutRequest) body).authToken());
+            } else if (Objects.equals(body.getClass(), ListGamesRequest.class)) {
+                request.setHeader("authorization", ((ListGamesRequest) body).authToken());
+            } else if (Objects.equals(body.getClass(), CreateGameRequest.class)) {
+                request.setHeader("authorization", ((CreateGameRequest) body).authToken());
+            } else if (Objects.equals(body.getClass(), JoinGameRequest.class)) {
+                request.setHeader("authorization", ((JoinGameRequest) body).authToken());
+            }
         }
         return request.build();
     }

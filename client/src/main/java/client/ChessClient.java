@@ -4,10 +4,7 @@ import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Scanner;
+import java.util.*;
 
 public class ChessClient {
     private final ServerFacade server;
@@ -40,7 +37,7 @@ public class ChessClient {
     }
 
     private void printPrompt() {
-        System.out.print("\n\u001B[0m>>> \033[32m");
+        System.out.print("\n\u001B[0m" + state + ">>> \033[32m");
     }
 
     public String eval(String input) {
@@ -60,6 +57,7 @@ public class ChessClient {
                     case "logout" -> logout();
                     case "create" -> createGame(params);
                     case "quit" -> "quit";
+                    case "list" -> listGames();
                     default -> help();
                 };
             } else {
@@ -72,10 +70,14 @@ public class ChessClient {
 
     public String login(String... params) throws ResponseException {
         if (params.length >= 2) {
-            LoginResult result = server.facadeLogin(params[0], params[1]);
-            authToken = result.authToken();
-            state = State.SIGNEDIN;
-            return String.format("You signed in as %s", result.username());
+            try {
+                LoginResult result = server.facadeLogin(params[0], params[1]);
+                authToken = result.authToken();
+                state = State.SIGNEDIN;
+                return String.format("You signed in as %s -- type help for new commands", result.username());
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: unregistered user");
+            }
         }
         throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <your username> <your password>\u001B[0m");
     }
@@ -101,7 +103,7 @@ public class ChessClient {
             state = State.SIGNEDOUT;
             return "You have successfully logged out";
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ClientError, "other failure");
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
         }
     }
 
@@ -110,9 +112,9 @@ public class ChessClient {
         if (params.length >= 1) {
             try {
                 CreateGameResult result = server.facadeCreateGame(params[0], authToken);
-                return String.format("You have successfully created game #" + result.gameID());
+                return String.format("You have successfully created game " + params[0]);
             } catch (Exception e) {
-                throw new ResponseException(ResponseException.Code.ClientError, "create game failure");
+                throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
             }
         }
         throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <game name>\u001B[0m");
@@ -120,8 +122,19 @@ public class ChessClient {
 
     public String listGames() throws ResponseException {
         assertSignedIn();
-        ListGamesResult result = server.facadeListGames(authToken);
-        return null;
+        try {
+            ListGamesResult result = server.facadeListGames(authToken);
+            for (var i = 0; i < result.games().size(); i++) {
+                for (ListGamesHelperResult game : result.games()) {
+                    return String.format("%d. GameID: %d | White Username: %s | Black Username: %s | Game Name: %s",
+                            i+1, game.gameID(), game.whiteUsername(), game.blackUsername(),
+                            game.gameName());
+                }
+            }
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
+        }
+        return "No games in database";
     }
 
     public String help() {
