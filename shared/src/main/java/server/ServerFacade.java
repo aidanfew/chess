@@ -1,7 +1,8 @@
 package server;
 
 import com.google.gson.Gson;
-import requests.LoginRequest;import requests.RegisterRequest;import results.LoginResult;import results.LogoutResult;
+import requests.*;
+import results.*;
 
 
 import java.net.URI;
@@ -11,7 +12,7 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpResponse;
-import exception.ResponseException;import results.RegisterResult;
+import exception.ResponseException;
 import java.util.Locale;
 
 
@@ -25,8 +26,7 @@ public class ServerFacade {
 
      public LoginResult facadeLogin(String username, String password) throws ResponseException {
         LoginRequest loginRequest = new LoginRequest(username, password);
-        Object body = makeRequestBody(loginRequest);
-        var request = buildRequest("POST", "/session", body);
+        var request = buildRequest("POST", "/session", loginRequest);
         var response = sendRequest(request);
         return handleResponse(response, LoginResult.class);
     }
@@ -36,6 +36,27 @@ public class ServerFacade {
         var request = buildRequest("POST", "/user", registerRequest);
         var response = sendRequest(request);
         return handleResponse(response, RegisterResult.class);
+    }
+
+    public LogoutResult facadeLogout(String authToken) throws ResponseException {
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+        var request = buildRequest("DELETE", "/session", logoutRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, LogoutResult.class);
+    }
+
+    public CreateGameResult facadeCreateGame(String gameName, String authToken) throws ResponseException{
+        CreateGameRequest createGameRequest = new CreateGameRequest(gameName,authToken);
+        var request = buildRequest("POST", "/game", createGameRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, CreateGameResult.class);
+    }
+
+    public ListGamesResult facadeListGames(String authToken) throws ResponseException {
+        ListGamesRequest listGamesRequest = new ListGamesRequest(authToken);
+        var request = buildRequest("GET", "/game", listGamesRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, ListGamesResult.class);
     }
 
 

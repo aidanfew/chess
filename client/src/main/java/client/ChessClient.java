@@ -1,8 +1,7 @@
 package client;
 
 import exception.ResponseException;
-import results.LoginResult;
-import results.RegisterResult;
+import results.*;
 import server.ServerFacade;
 
 import java.util.ArrayList;
@@ -13,6 +12,7 @@ import java.util.Scanner;
 public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private String authToken;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -48,12 +48,23 @@ public class ChessClient {
             String[] tokens = input.split(" ");
             String cmd = (tokens.length > 0) ? tokens[0].toLowerCase() : "help";
             String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
-            return switch (cmd) {
-                case "login" -> login(params);
-                case "register" -> register(params);
-                case "quit" -> "quit";
-                default -> help();
-            };
+            if (state == State.SIGNEDOUT) {
+                return switch (cmd) {
+                    case "login" -> login(params);
+                    case "register" -> register(params);
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            } else if (state == State.SIGNEDIN) {
+                return switch (cmd) {
+                    case "logout" -> logout();
+                    case "create" -> createGame(params);
+                    case "quit" -> "quit";
+                    default -> help();
+                };
+            } else {
+                return null;
+            }
         } catch (ResponseException ex) {
             return ex.getMessage();
         }
@@ -61,20 +72,56 @@ public class ChessClient {
 
     public String login(String... params) throws ResponseException {
         if (params.length >= 2) {
-            state = State.SIGNEDIN;
             LoginResult result = server.facadeLogin(params[0], params[1]);
+            authToken = result.authToken();
+            state = State.SIGNEDIN;
             return String.format("You signed in as %s", result.username());
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mExpected: <your_username> <your_password>\u001B[0m");
+        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <your username> <your password>\u001B[0m");
     }
 
     public String register(String... params) throws ResponseException {
         if (params.length >= 3) {
-            state = State.SIGNEDIN;
-            RegisterResult result = server.facadeRegister(params[0], params[1], params[2]);
-            return String.format("You have successfully registered as %s", result.username());
+            try {
+                RegisterResult result = server.facadeRegister(params[0], params[1], params[2]);
+                authToken = result.authToken();
+                state = State.SIGNEDIN;
+                return String.format("You have successfully registered as %s", result.username());
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: username already taken");
+            }
         }
         throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <username> <password> <email>\u001B[0m");
+    }
+
+    public String logout() throws ResponseException {
+        assertSignedIn();
+        try {
+            server.facadeLogout(authToken);
+            state = State.SIGNEDOUT;
+            return "You have successfully logged out";
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ClientError, "other failure");
+        }
+    }
+
+    public String createGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 1) {
+            try {
+                CreateGameResult result = server.facadeCreateGame(params[0], authToken);
+                return String.format("You have successfully created game #" + result.gameID());
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "create game failure");
+            }
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <game name>\u001B[0m");
+    }
+
+    public String listGames() throws ResponseException {
+        assertSignedIn();
+        ListGamesResult result = server.facadeListGames(authToken);
+        return null;
     }
 
     public String help() {
@@ -86,7 +133,13 @@ public class ChessClient {
                     \u001B[34mhelp\u001B[0m - for possible commands
                     """;
         } else {
-            return "";
+            return """
+                    \u001B[33mlogout\u001B[0m - when you are done
+                    \u001B[34mcreate <GAMENAME>\u001B[0m - to create a game
+                    \u001B[33mlist\u001B[0m - to list all games
+                    \u001B[34mjoin <ID> [WHITE|BLACK]\u001B[0m - to join an existing game
+                    \u001B[33mobserve <ID>\u001B[0m - to observe an active game
+                    """;
         }
     }
 
