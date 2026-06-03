@@ -66,7 +66,11 @@ public class ChessClient {
                     default -> help();
                 };
             } else {
-                return null;
+                return switch (cmd) {
+                    case "quit" -> "quit";
+                    case "return" -> returnToLogin();
+                    default -> help();
+                };
             }
         } catch (ResponseException ex) {
             return ex.getMessage();
@@ -181,5 +185,10 @@ public class ChessClient {
         if (state == State.SIGNEDOUT) {
             throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mYou must sign in");
         }
+    }
+
+    private String returnToLogin() {
+        state = State.SIGNEDIN;
+        return "You are no longer playing" + help();
     }
 }

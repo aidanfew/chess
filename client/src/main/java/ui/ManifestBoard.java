@@ -41,71 +41,51 @@ public class ManifestBoard {
     }
 
     private static void drawHeaders(PrintStream out, ChessGame.TeamColor playerColor) {
-        setBlack(out);
         String[] files;
-        String[] ranks;
         if (Objects.equals(playerColor, ChessGame.TeamColor.WHITE)) {
             files = new String[]{" ", "a", "b", "c", "d", "e", "f", "g", "h", " "};
-            ranks = new String[]{"1", "2", "3", "4", "5", "6", "7", "8"};
         } else {
             files = new String[]{" ", "h", "g", "f", "e", "d", "c", "b", "a", " "};
-            ranks = new String[]{"8", "7", "6", "5", "4", "3", "2", "1"};
         }
 
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            out.print(SET_BG_COLOR_LIGHT_GREY);
             drawHeader(out, files[boardCol]);
-            out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
         }
+        out.print(RESET_BG_COLOR);
         out.println();
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
         int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-        out.print(EMPTY.repeat(1));
+        out.print(EMPTY);
         printHeaderText(out, headerText);
-        out.print(EMPTY.repeat(1));
-    }
-
-    private static void drawColumn(PrintStream out, String headerText) {
-        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+//        out.print(EMPTY.repeat(1));
     }
 
     private static void printHeaderText(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_WHITE);
 
         out.print(player);
 
-        setBlack(out);
-    }
-
-    private static void printColumnText(PrintStream out, String player) {
-        out.print(SET_BG_COLOR_DARK_GREY);
-        out.print(SET_TEXT_COLOR_BLACK);
-
-        out.print(player);
-
-        setBlack(out);
+        out.print(RESET_TEXT_COLOR);
     }
 
     private void drawChessBoard(PrintStream out) {
-        for (int boardRow = 8; boardRow > BOARD_SIZE_IN_SQUARES - ; --boardRow) {
+        for (int boardRow = 8; boardRow > BOARD_SIZE_IN_SQUARES - 10; --boardRow) {
 
             drawRowsOfSquares(out, boardRow);
-
-            drawHorizontalLine(out);
-            out.print(RESET_BG_COLOR);
         }
     }
 
     private void drawRowsOfSquares(PrintStream out, int row) {
-        String[] ranks = new String[]{"8", "7", "6", "5", "4", "3", "2", "1"};
+        String[] ranks = new String[]{"1", "2", "3", "4", "5", "6", "7", "8"};
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
             out.print(ranks[row-1]);
-            for (int squareCol = 1; squareCol < BOARD_SIZE_IN_SQUARES - 1; ++squareCol) {
-                setWhite(out);
-                    out.print(EMPTY.repeat(1));
+            out.print(RESET_TEXT_COLOR);
+            out.print(RESET_BG_COLOR);
+            for (int squareCol = 8; squareCol > BOARD_SIZE_IN_SQUARES - 10; --squareCol) {
                     ChessPosition position = new ChessPosition(row, squareCol);
                     ChessPiece piece = board.getPiece(position);
                     if (piece != null) {
@@ -115,8 +95,13 @@ public class ManifestBoard {
                 } else {
                         printPlayer(out, null, null);
                     }
+                out.print(RESET_BG_COLOR);
             }
+            out.print(SET_BG_COLOR_LIGHT_GREY);
+            out.print(SET_TEXT_COLOR_WHITE);
             out.println(ranks[row-1]);
+            out.print(RESET_TEXT_COLOR);
+            out.print(RESET_BG_COLOR);
         }
 
     private static void drawHorizontalLine(PrintStream out) {
@@ -143,12 +128,12 @@ public class ManifestBoard {
     }
 
     private static void printPlayer(PrintStream out, ChessGame.TeamColor color, ChessPiece.PieceType piece) {
-        out.print(SET_BG_COLOR_LIGHT_GREY);
         out.print(SET_TEXT_COLOR_BLACK);
 
         if (Objects.equals(color, ChessGame.TeamColor.WHITE)) {
+            out.print(SET_TEXT_COLOR_WHITE);
             switch (piece) {
-                case null -> out.print(" ");
+                case null -> out.print(EMPTY);
                 case PAWN -> out.print(WHITE_PAWN);
                 case ROOK -> out.print(WHITE_ROOK);
                 case KNIGHT -> out.print(WHITE_KNIGHT);
@@ -156,9 +141,11 @@ public class ManifestBoard {
                 case KING -> out.print(WHITE_KING);
                 case QUEEN -> out.print(WHITE_QUEEN);
             }
+            out.print(RESET_TEXT_COLOR);
         } else {
+            out.print();
             switch (piece) {
-                case null -> out.print(" ");
+                case null -> out.print(EMPTY);
                 case PAWN -> out.print(BLACK_PAWN);
                 case ROOK -> out.print(BLACK_ROOK);
                 case KNIGHT -> out.print(BLACK_KNIGHT);
@@ -166,6 +153,7 @@ public class ManifestBoard {
                 case KING -> out.print(BLACK_KING);
                 case QUEEN -> out.print(BLACK_QUEEN);
             }
+            out.print(RESET_TEXT_COLOR);
         }
         out.print(RESET_BG_COLOR);
     }
