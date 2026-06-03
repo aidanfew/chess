@@ -155,18 +155,24 @@ public class ChessClient {
     public String joinGame(String... params) throws ResponseException {
         ListGamesHelperResult game = gameHashMap.get(params[0]);
         if (params.length >= 2) {
-            try {
-                server.facadeJoinGame(authToken, params[1].toUpperCase(), game.gameID());
-                state = State.GAMEPLAY;
-                ChessBoard board = new ChessBoard();
-                board.resetBoard();
-                ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
-                manifestBoard.run();
-            } catch (Exception e) {
-                throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+            if (gameHashMap.containsKey(params[0])) {
+                try {
+                    server.facadeJoinGame(authToken, params[1].toUpperCase(), game.gameID());
+                    state = State.GAMEPLAY;
+                    ChessBoard board = new ChessBoard();
+                    board.resetBoard();
+                    ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
+                    manifestBoard.run();
+                } catch (Exception e) {
+                    throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+                }
+            } else {
+                return "\u001B[31mError: Invalid GameID\u001B[0m";
             }
+        } else {
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <gameID> [WHITE | BLACK]\u001B[0m");
         }
-        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <gameID> [WHITE | BLACK]\u001B[0m");
+        return "";
     }
 
     public String observe(String... params) throws ResponseException {
@@ -176,8 +182,12 @@ public class ChessClient {
             board.resetBoard();
             ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
-                manifestBoard.run();
-                return "";
+                if (gameHashMap.containsKey(params[0])) {
+                    manifestBoard.run();
+                    return "";
+                } else {
+                    return "\u001B[31mError: Invalid GameID\u001B[0m";
+                }
             } catch (Exception e) {
                 throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
             }
