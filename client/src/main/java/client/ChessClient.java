@@ -137,6 +137,8 @@ public class ChessClient {
         return "No games in database";
     }
 
+    public
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """

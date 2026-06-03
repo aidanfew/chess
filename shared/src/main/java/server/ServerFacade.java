@@ -60,6 +60,13 @@ public class ServerFacade {
         return handleResponse(response, ListGamesResult.class);
     }
 
+    public JoinGameResult facadeJoinGame(String authToken, String playerColor, int gameID) throws ResponseException {
+        JoinGameRequest joinGameRequest = new JoinGameRequest(authToken, playerColor, gameID);
+        var request = buildRequest("PUT", "/game", joinGameRequest);
+        var response = sendRequest(request);
+        return handleResponse(response, JoinGameResult.class);
+    }
+
 
 
     private HttpRequest buildRequest(String method, String path, Object body) {
