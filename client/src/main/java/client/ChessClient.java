@@ -13,7 +13,7 @@ public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private String authToken;
-    private HashMap<String, ListGamesHelperResult> gameHashMap;
+    private final HashMap<String, ListGamesHelperResult> gameHashMap = new HashMap<>();
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -62,6 +62,7 @@ public class ChessClient {
                     case "create" -> createGame(params);
                     case "quit" -> "quit";
                     case "list" -> listGames();
+                    case "join" -> joinGame(authToken, params[0], params[1]);
                     default -> help();
                 };
             } else {
@@ -142,13 +143,18 @@ public class ChessClient {
         return "No games in database";
     }
 
-    public String joinGame(String authToken, String GameID, String color) throws Exception {
+    public String joinGame(String authToken, String GameID, String color) throws ResponseException {
         state = State.GAMEPLAY;
         ListGamesHelperResult game = gameHashMap.get(GameID);
         try {
             server.facadeJoinGame(authToken, color, game.gameID());
-            ChessBoard board =
-            return ManifestBoard()
+            ChessBoard board = new ChessBoard();
+            board.resetBoard();
+            ManifestBoard manifestBoard = new ManifestBoard(board, color);
+            manifestBoard.run();
+            return "";
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
         }
     }
 
