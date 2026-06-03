@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import exception.ResponseException;
 import results.*;
@@ -146,6 +147,7 @@ public class ChessClient {
         ListGamesHelperResult game = gameHashMap.get(GameID);
         try {
             server.facadeJoinGame(authToken, color, game.gameID());
+            ChessBoard board =
             return ManifestBoard()
         }
     }
