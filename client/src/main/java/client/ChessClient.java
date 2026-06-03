@@ -162,7 +162,6 @@ public class ChessClient {
                 board.resetBoard();
                 ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
                 manifestBoard.run();
-                return "";
             } catch (Exception e) {
                 throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
