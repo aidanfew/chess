@@ -135,11 +135,11 @@ public class ChessClient {
         StringBuilder string = new StringBuilder();
         try {
             ListGamesResult result = server.facadeListGames(authToken);
-            int i = 0;
+            int i = 1;
                 for (ListGamesHelperResult game : result.games()) {
                     gameHashMap.put(String.valueOf(i), game);
                     string.append(String.format("%d. White Username: %s | Black Username: %s | Game Name: %s\n",
-                            i+1, game.whiteUsername(), game.blackUsername(), game.gameName()));
+                            i, game.whiteUsername(), game.blackUsername(), game.gameName()));
                     i += 1;
                 }
             if (!string.isEmpty()) {
@@ -154,17 +154,20 @@ public class ChessClient {
 
     public String joinGame(String... params) throws ResponseException {
         ListGamesHelperResult game = gameHashMap.get(params[0]);
-        try {
-            server.facadeJoinGame(authToken, params[1].toUpperCase(), game.gameID());
-            state = State.GAMEPLAY;
-            ChessBoard board = new ChessBoard();
-            board.resetBoard();
-            ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
-            manifestBoard.run();
-            return "";
-        } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <gameID> [WHITE | BLACK]\u001B[0m");
+        if (params.length >= 2) {
+            try {
+                server.facadeJoinGame(authToken, params[1].toUpperCase(), game.gameID());
+                state = State.GAMEPLAY;
+                ChessBoard board = new ChessBoard();
+                board.resetBoard();
+                ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
+                manifestBoard.run();
+                return "";
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+            }
         }
+        throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: Expected <gameID> [WHITE | BLACK]\u001B[0m");
     }
 
     public String observe(String... params) throws ResponseException {
