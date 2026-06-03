@@ -3,6 +3,7 @@ package client;
 import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import exception.ResponseException;
+import model.AuthData;
 import org.junit.jupiter.api.*;
 import server.Server;
 import server.ServerFacade;
@@ -80,10 +81,53 @@ public class ServerFacadeTests {
     @Test
     @DisplayName("Logout Positive")
     public void logoutPositive() throws Exception {
-        facade.facadeRegister("user1", "1234", "user@user");
+        var authData = facade.facadeRegister("user1", "1234", "user@user");
+        facade.facadeLogout(authData.authToken());
+        Assertions.assertNull(auth.getAuth(authData.authToken()));
+    }
 
-        Assertions.assertDoesNotThrow(() -> {
-
+    @Test
+    @DisplayName("Logout Negative")
+    public void logoutNegative() throws Exception {
+        var authData = facade.facadeRegister("user2", "1234", "diddykong");
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.facadeLogout("1234");
         });
     }
+
+    @Test
+    @DisplayName("Create Game Positive")
+    public void createGamePositive() throws Exception {
+        var authData = facade.facadeRegister("user1", "1234", "diddykong");
+        var gameData = facade.facadeCreateGame("gamename", authData.authToken());
+        Assertions.assertNotNull(gameData.gameID());
+    }
+
+    @Test
+    @DisplayName("Create Game Negative")
+    public void createGameNegative() throws Exception {
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.facadeCreateGame("game1", "1234");
+        });
+    }
+
+    @Test
+    @DisplayName("List Games Positive")
+    public void listGamesPositive() throws Exception {
+        var authData = facade.facadeRegister("mario", "1234", "bowser");
+        var gameData = facade.facadeCreateGame("game1", authData.authToken());
+        Assertions.assertNotNull(facade.facadeListGames(authData.authToken()));
+    }
+
+    @Test
+    @DisplayName("List Games Negative")
+    public void listGamesNegative() throws Exception {
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.facadeListGames("1234");
+        });
+    }
+
+    @Test
+    @DisplayName("Join Game Positive")
+
 }
