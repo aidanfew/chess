@@ -1,8 +1,10 @@
 package client;
 
+import chess.ChessGame;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
+import ui.ManifestBoard;
 
 import java.util.*;
 
@@ -10,6 +12,7 @@ public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private String authToken;
+    private HashMap<String, ListGamesHelperResult> gameHashMap;
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -126,9 +129,10 @@ public class ChessClient {
             ListGamesResult result = server.facadeListGames(authToken);
             for (var i = 0; i < result.games().size(); i++) {
                 for (ListGamesHelperResult game : result.games()) {
-                    return String.format("%d. GameID: %d | White Username: %s | Black Username: %s | Game Name: %s",
-                            i+1, game.gameID(), game.whiteUsername(), game.blackUsername(),
-                            game.gameName());
+                    int j = i+1;
+                    gameHashMap.put(String.valueOf(j), game);
+                    return String.format("%d. White Username: %s | Black Username: %s | Game Name: %s",
+                            i+1, game.whiteUsername(), game.blackUsername(), game.gameName());
                 }
             }
         } catch (Exception e) {
@@ -137,7 +141,14 @@ public class ChessClient {
         return "No games in database";
     }
 
-    public
+    public String joinGame(String authToken, String GameID, String color) throws Exception {
+        state = State.GAMEPLAY;
+        ListGamesHelperResult game = gameHashMap.get(GameID);
+        try {
+            server.facadeJoinGame(authToken, color, game.gameID());
+            return ManifestBoard()
+        }
+    }
 
     public String help() {
         if (state == State.SIGNEDOUT) {
