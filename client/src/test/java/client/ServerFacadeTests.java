@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ServerFacadeTests {
 
-    private static Server server = new Server();
+    private static Server server;
     private static ServerFacade facade;
     UserService user = new UserService();
     GameService game = new GameService();
