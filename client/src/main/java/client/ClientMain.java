@@ -1,12 +1,7 @@
 package client;
 
 import chess.*;
-import ui.PreloginUI;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Scanner;
 import java.lang.String;
 
 public class ClientMain {

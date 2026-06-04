@@ -126,17 +126,6 @@ public class ManifestBoard {
             out.print(RESET_BG_COLOR);
         }
 
-
-    private static void setWhite(PrintStream out) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
-
-    private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
-    }
-
     private static void printPlayer(PrintStream out, ChessGame.TeamColor color, ChessPiece.PieceType piece) {
         if (Objects.equals(color, ChessGame.TeamColor.WHITE)) {
             out.print(SET_TEXT_COLOR_WHITE);

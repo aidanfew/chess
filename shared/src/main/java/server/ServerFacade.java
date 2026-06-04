@@ -13,12 +13,12 @@ import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.net.http.HttpResponse;
 import exception.ResponseException;
-import java.util.Locale;
+
 import java.util.Objects;
 
 
 public class ServerFacade {
-    private static final HttpClient client = HttpClient.newHttpClient();
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private final String serverUrl;
 
     public ServerFacade(String url) {
@@ -97,7 +97,7 @@ public class ServerFacade {
 
     private HttpResponse<String> sendRequest(HttpRequest request) throws ResponseException {
         try {
-            return client.send(request, BodyHandlers.ofString());
+            return CLIENT.send(request, BodyHandlers.ofString());
         } catch (Exception ex) {
             throw new ResponseException(ResponseException.Code.ServerError, "other failure");
         }
