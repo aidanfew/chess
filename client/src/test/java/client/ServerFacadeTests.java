@@ -5,6 +5,7 @@ import dataaccess.DataAccessException;
 import exception.ResponseException;
 import model.AuthData;
 import org.junit.jupiter.api.*;
+import results.JoinGameResult;
 import server.Server;
 import server.ServerFacade;
 import service.ClearService;
@@ -13,7 +14,7 @@ import service.UserService;
 
 import javax.xml.crypto.Data;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 public class ServerFacadeTests {
@@ -129,5 +130,20 @@ public class ServerFacadeTests {
 
     @Test
     @DisplayName("Join Game Positive")
+    public void joinGamePositive() throws Exception {
+        var authData = facade.facadeRegister("user3", "1234", "use3");
+        var gameData = facade.facadeCreateGame("gamename", authData.authToken());
+        var result = facade.facadeJoinGame(authData.authToken(), "WHITE", gameData.gameID());
+        Assertions.assertEquals(JoinGameResult.class, result.getClass());
+    }
 
+    @Test
+    @DisplayName("Join Game Negative")
+    public void joinGameNegative() throws Exception {
+        var authData = facade.facadeRegister("user4", "1234", "user4");
+        var gameData = facade.facadeCreateGame("game1", authData.authToken());
+        Assertions.assertThrows(ResponseException.class, () -> {
+            facade.facadeJoinGame(authData.authToken(), "BLACK", 2);
+        });
+    }
 }
