@@ -2,21 +2,27 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
+import com.sun.nio.sctp.Notification;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
 import ui.ManifestBoard;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private String authToken;
     private final HashMap<String, ListGamesHelperResult> gameHashMap = new HashMap<>();
+    private final WebSocketFacade ws;
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        ws = new WebSocketFacade(serverUrl, this);
     }
 
     public void run() {
@@ -183,6 +189,7 @@ public class ChessClient {
             ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
                 if (gameHashMap.containsKey(params[0])) {
+                    ws.connect(authToken, params[0]);
                     manifestBoard.run();
                     return "";
                 } else {
@@ -230,5 +237,9 @@ public class ChessClient {
     private String returnToLogin() {
         state = State.SIGNEDIN;
         return "You are no longer playing\n" + help();
+    }
+
+    @Override
+    public void notify(ServerMessage serverMessage) {
     }
 }

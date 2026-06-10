@@ -6,6 +6,7 @@ import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import handlers.*;
 import io.javalin.*;
+import server.websocket.WebSocketHandler;
 import service.GameService;
 import service.UserService;
 
@@ -19,6 +20,7 @@ public class Server {
         AuthSqlDAO authSqlDAO;
         UserService userService;
         GameService gameService;
+        WebSocketHandler webSocketHandler = new WebSocketHandler();
         try {
             DatabaseManager.createDatabase();
             authSqlDAO = new AuthSqlDAO();
@@ -34,7 +36,12 @@ public class Server {
                     .delete("/session", new LogoutHandler(userService, authSqlDAO))
                     .post("/game", new CreateGameHandler(gameService, authSqlDAO))
                     .put("/game", new JoinGameHandler(gameService, authSqlDAO))
-                    .get("/game", new ListGamesHandler(gameService, authSqlDAO));
+                    .get("/game", new ListGamesHandler(gameService, authSqlDAO))
+                    .ws("/ws", ws -> {
+                        ws.onConnect(webSocketHandler);
+                        ws.onMessage(webSocketHandler);
+                        ws.onClose(webSocketHandler);
+                    });
     }
 
     public int run(int desiredPort) {
