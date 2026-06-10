@@ -31,17 +31,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
             switch (userGameCommand.getCommandType()) {
-                case CONNECT -> connect("user1", (WebSocketSession) wsMessageContext.session);
+                case CONNECT -> connect((WebSocketSession) wsMessageContext.session);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void connect(String userName, WebSocketSession session) throws ResponseException, IOException {
-        String message = String.format("%s has connected", userName);
+    private void connect(WebSocketSession session) throws IOException {
         ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-        connections.broadcast(session, serverMessage);
-        System.out.println(message);
+        String json = new Gson().toJson(serverMessage);
+        connections.broadcastConnect(session, json);
     }
 }

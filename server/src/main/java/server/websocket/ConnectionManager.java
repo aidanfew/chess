@@ -1,5 +1,6 @@
 package server.websocket;
 
+import com.google.gson.Gson;
 import exception.ResponseException;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.ServerMessage;
@@ -29,6 +30,13 @@ public class ConnectionManager {
                     System.out.println(message);
                 }
             }
+        }
+    }
+
+    public void broadcastConnect(WebSocketSession session, String serverMessage) throws IOException {
+        if (session.isOpen()) {
+            String connectMessage = new Gson().toJson(serverMessage);
+            session.getRemote().sendString(connectMessage);
         }
     }
 }

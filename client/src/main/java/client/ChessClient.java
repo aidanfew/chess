@@ -1,17 +1,18 @@
 package client;
 
 import chess.ChessBoard;
-import client.websocket.NotificationHandler;
+import client.websocket.ServerMessageHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
+import ui.EscapeSequences;
 import ui.ManifestBoard;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
 
-public class ChessClient implements NotificationHandler {
+public class ChessClient implements ServerMessageHandler {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private String authToken;
@@ -238,6 +239,17 @@ public class ChessClient implements NotificationHandler {
     }
 
     @Override
-    public void notify(ServerMessage serverMessage) {
+    public void notifyLoadGame(ServerMessage serverMessage) {
+        System.out.println("Load Game received");
+    }
+
+    @Override
+    public void notifyError(ServerMessage serverMessage) {
+        System.out.println("Error received");
+    }
+
+    @Override
+    public void notifyNotification(ServerMessage serverMessage) {
+        System.out.println("Notification received ");
     }
 }

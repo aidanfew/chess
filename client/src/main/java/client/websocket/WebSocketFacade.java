@@ -6,18 +6,19 @@ import jakarta.websocket.*;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
+import java.lang.reflect.Type;
 import java.net.URI;
 
 public class WebSocketFacade extends Endpoint {
 
     Session session;
-    NotificationHandler notificationHandler;
+    ServerMessageHandler serverMessageHandler;
 
-    public WebSocketFacade(String url, NotificationHandler notificationHandler) throws ResponseException {
+    public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
         try {
             url = url.replace("http", "ws");
             URI socketURI = new URI(url + "/ws");
-            this.notificationHandler = notificationHandler;
+            this.serverMessageHandler = serverMessageHandler;
 
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
             this.session = container.connectToServer(this, socketURI);
@@ -26,8 +27,16 @@ public class WebSocketFacade extends Endpoint {
 
                 @Override
                 public void onMessage(String message) {
-                    ServerMessage serverMessage = new Gson().fromJson(message, ServerMessage.class);
-                    notificationHandler.notify(serverMessage);
+                    System.out.println("onMessage firing and the message is " + message);
+                    ServerMessage serverMessage = new Gson().fromJson(message, (Type) ServerMessage.ServerMessageType.class);
+                    if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+                        System.out.println("Load Game Type detected in onmessage");
+                        serverMessageHandler.notifyLoadGame(serverMessage);
+                    } else if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
+                        serverMessageHandler.notifyError(serverMessage);
+                    } else {
+                        serverMessageHandler.notifyNotification(serverMessage);
+                    }
                 }
             });
         } catch (Exception e) {
