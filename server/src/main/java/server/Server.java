@@ -20,12 +20,13 @@ public class Server {
         AuthSqlDAO authSqlDAO;
         UserService userService;
         GameService gameService;
-        WebSocketHandler webSocketHandler = new WebSocketHandler();
+        WebSocketHandler webSocketHandler;
         try {
             DatabaseManager.createDatabase();
             authSqlDAO = new AuthSqlDAO();
             userService = new UserService();
             gameService = new GameService();
+            webSocketHandler = new WebSocketHandler();
         } catch (DataAccessException e) {
             throw new RuntimeException(e.getMessage());
         }

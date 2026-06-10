@@ -26,6 +26,7 @@ public class ConnectionManager {
             if (session.isOpen()) {
                 if (!session.equals(excludeSession)) {
                     session.getBasicRemote().sendText(message);
+                    System.out.println(message);
                 }
             }
         }

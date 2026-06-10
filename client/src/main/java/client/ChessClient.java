@@ -8,6 +8,7 @@ import com.sun.nio.sctp.Notification;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
+import ui.EscapeSequences;
 import ui.ManifestBoard;
 import websocket.messages.ServerMessage;
 
