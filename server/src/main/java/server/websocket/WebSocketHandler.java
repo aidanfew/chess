@@ -5,7 +5,7 @@ import exception.ResponseException;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
-import jakarta.websocket.*;
+import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.ServerMessage;
 
 import javax.swing.*;
@@ -31,16 +31,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
             switch (userGameCommand.getCommandType()) {
-                case CONNECT -> connect("user1", (Session) wsMessageContext.session);
+                case CONNECT -> connect("user1", (WebSocketSession) wsMessageContext.session);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void connect(String userName, Session session) throws ResponseException, IOException {
+    private void connect(String userName, WebSocketSession session) throws ResponseException, IOException {
         String message = String.format("%s has connected", userName);
-        ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         connections.broadcast(session, serverMessage);
+        System.out.println(message);
     }
 }

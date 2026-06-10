@@ -3,7 +3,6 @@ package client.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import jakarta.websocket.*;
-import org.glassfish.grizzly.http.server.Response;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -40,7 +39,7 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connect(String authToken, String gameID) throws ResponseException {
+    public void webSocketFacadeConnect(String authToken, String gameID) throws ResponseException {
         try {
             var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, Integer.parseInt(gameID));
             this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));

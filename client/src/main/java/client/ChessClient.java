@@ -1,14 +1,11 @@
 package client;
 
 import chess.ChessBoard;
-import chess.ChessGame;
 import client.websocket.NotificationHandler;
 import client.websocket.WebSocketFacade;
-import com.sun.nio.sctp.Notification;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
-import ui.EscapeSequences;
 import ui.ManifestBoard;
 import websocket.messages.ServerMessage;
 
@@ -190,7 +187,7 @@ public class ChessClient implements NotificationHandler {
             ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
                 if (gameHashMap.containsKey(params[0])) {
-                    ws.connect(authToken, params[0]);
+                    ws.webSocketFacadeConnect(authToken, params[0]);
                     manifestBoard.run();
                     return "";
                 } else {
