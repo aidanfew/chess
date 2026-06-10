@@ -27,15 +27,15 @@ public class WebSocketFacade extends Endpoint {
 
                 @Override
                 public void onMessage(String message) {
-                    System.out.println("onMessage firing and the message is " + message);
-                    ServerMessage serverMessage = new Gson().fromJson(message, (Type) ServerMessage.ServerMessageType.class);
-                    if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+                    ServerMessage type = new Gson().fromJson(message, ServerMessage.class);
+                    if (type.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
+                        serverMessageHandler.notifyLoadGame(type);
+                    } else if (type.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
                         System.out.println("Load Game Type detected in onmessage");
-                        serverMessageHandler.notifyLoadGame(serverMessage);
-                    } else if (serverMessage.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
-                        serverMessageHandler.notifyError(serverMessage);
+                        serverMessageHandler.notifyError(type);
                     } else {
-                        serverMessageHandler.notifyNotification(serverMessage);
+                        System.out.println("Load Game Type detected in onmessage");
+                        serverMessageHandler.notifyNotification(type);
                     }
                 }
             });

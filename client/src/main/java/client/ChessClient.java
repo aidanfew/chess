@@ -6,7 +6,6 @@ import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
-import ui.EscapeSequences;
 import ui.ManifestBoard;
 import websocket.messages.ServerMessage;
 

@@ -33,7 +33,7 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastConnect(WebSocketSession session, String serverMessage) throws IOException {
+    public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage) throws IOException {
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);

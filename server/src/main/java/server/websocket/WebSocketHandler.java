@@ -40,7 +40,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(WebSocketSession session) throws IOException {
         ServerMessage serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-        String json = new Gson().toJson(serverMessage);
-        connections.broadcastConnect(session, json);
+        connections.broadcastConnect(session, serverMessage);
     }
 }
