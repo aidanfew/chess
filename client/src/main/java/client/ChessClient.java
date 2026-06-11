@@ -1,12 +1,14 @@
 package client;
 
 import chess.ChessBoard;
+import chess.ChessGame;
 import client.websocket.ServerMessageHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
 import ui.ManifestBoard;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
@@ -182,13 +184,15 @@ public class ChessClient implements ServerMessageHandler {
     public String observe(String... params) throws ResponseException {
         state = State.GAMEPLAY;
         if (params.length >= 1) {
-            ChessBoard board = new ChessBoard();
-            board.resetBoard();
-            ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
+//            ChessBoard board = new ChessBoard();
+//            board.resetBoard();
+//            ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
                 if (gameHashMap.containsKey(params[0])) {
+                    System.out.println("Got to observe");
                     ws.webSocketFacadeConnect(authToken, params[0]);
-                    manifestBoard.run();
+                    System.out.println("Observe connected");
+//                    manifestBoard.run();
                     return "";
                 } else {
                     return "\u001B[31mError: Invalid GameID\u001B[0m";
@@ -238,8 +242,11 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     @Override
-    public void notifyLoadGame(ServerMessage serverMessage) {
+    public void notifyLoadGame(LoadGameMessage serverMessage) {
         System.out.println("Load Game received");
+        ChessGame game = serverMessage.giveGame();
+        ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), "WHITE");
+        manifestBoard.run();
     }
 
     @Override
