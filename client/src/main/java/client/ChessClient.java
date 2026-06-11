@@ -2,6 +2,8 @@ package client;
 
 import chess.ChessBoard;
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import client.websocket.ServerMessageHandler;
 import client.websocket.WebSocketFacade;
 import exception.ResponseException;
@@ -12,6 +14,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
+import java.sql.Array;
 import java.util.*;
 
 public class ChessClient implements ServerMessageHandler {
@@ -20,6 +23,7 @@ public class ChessClient implements ServerMessageHandler {
     private String authToken;
     private final HashMap<String, ListGamesHelperResult> gameHashMap = new HashMap<>();
     private final WebSocketFacade ws;
+    private String perspectiveColor = "WHITE";
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -77,6 +81,7 @@ public class ChessClient implements ServerMessageHandler {
                 return switch (cmd) {
                     case "quit" -> "quit";
                     case "leave" -> leave();
+//                    case "move" -> makeMove();
                     default -> help();
                 };
             }
@@ -165,6 +170,8 @@ public class ChessClient implements ServerMessageHandler {
             if (gameHashMap.containsKey(params[0])) {
                 try {
                     server.facadeJoinGame(authToken, params[1].toUpperCase(), game.gameID());
+                    ws.webSocketFacadeConnect(authToken, params[0]);
+                    perspectiveColor = params[1];
                     state = State.GAMEPLAY;
                     ChessBoard board = new ChessBoard();
                     board.resetBoard();
@@ -190,9 +197,8 @@ public class ChessClient implements ServerMessageHandler {
 //            ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
                 if (gameHashMap.containsKey(params[0])) {
-                    System.out.println("Got to observe");
+                    perspectiveColor = "WHITE";
                     ws.webSocketFacadeConnect(authToken, params[0]);
-                    System.out.println("Observe connected");
 //                    manifestBoard.run();
                     return "";
                 } else {
@@ -217,6 +223,51 @@ public class ChessClient implements ServerMessageHandler {
         }
     }
 
+//    private String makeMove(String... params) throws ResponseException {
+//        assertInGameplay();
+//        if (params.length >= 2) {
+//            try {
+//
+//            }
+//        }
+//    }
+
+//    private ChessMove convertMove(String start, String end) {
+//        char startFile = start.charAt(0);
+//        char startRank = start.charAt(1);
+//        char endFile = end.charAt(0);
+//        char endRank = end.charAt(1);
+//        if (rankVerified(startRank) && rankVerified(endRank)) {
+//            int newStartFile = fileToColumn(startFile);
+//            int newEndFile = fileToColumn(endFile);
+//            if (Objects.equals(newStartFile, 0) || Objects.equals(newEndFile, 0)) {
+//                return null;
+//            } else {
+//                return new ChessMove(new ChessPosition(startRank, newStartFile), new ChessPosition(endRank, newEndFile), )
+//            }
+//        }
+//
+//    }
+
+    private int fileToColumn(char file) {
+        return switch (file) {
+            case 'a' -> 1;
+            case 'b' -> 2;
+            case 'c' -> 3;
+            case 'd' -> 4;
+            case 'e' -> 5;
+            case 'f' -> 6;
+            case 'g' -> 7;
+            case 'h' -> 8;
+            default -> 0;
+        };
+    }
+
+    private boolean rankVerified(char rank) {
+        ArrayList<String> list = new ArrayList<>(List.of("1", "2", "3", "4", "5", "6", "7", "8"));
+        return list.contains(String.valueOf(rank));
+    }
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
@@ -236,8 +287,12 @@ public class ChessClient implements ServerMessageHandler {
         } else {
             return """
                     \u001B[33mhelp\u001B[0m - for possible commands
-                    \u001B[34mquit\u001B[0m - to exit the system
+                    \u001B[34mredraw\u001B[0m - to redraw the board
                     \u001B[33mleave\u001B[0m - to leave the game
+                    \u001B[34mmove <START> <END>\u001B[0m - to make a move
+                    \u001B[33mresign\u001B[0m - to forfeit the game
+                    \u001B[34mhighlight\u001B[0m - your legal moves
+                    \u001B[33mquit\u001B[0m - to exit the system
                     """;
         }
     }
@@ -258,7 +313,7 @@ public class ChessClient implements ServerMessageHandler {
     public void notifyLoadGame(LoadGameMessage serverMessage) {
         System.out.println("Load Game received");
         ChessGame game = serverMessage.giveGame();
-        ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), "WHITE");
+        ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), perspectiveColor);
         manifestBoard.run();
     }
 

@@ -57,6 +57,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
                     case LEAVE -> leave((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
+//                    case MAKE_MOVE -> makeMove();
                 }
             }
 
@@ -78,5 +79,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void leave(WebSocketSession session, String userName) throws IOException {
         connections.remove(session);
         connections.broadcastLeave(session, userName, "left");
+    }
+
+    private void makeMove(WebSocketSession session, String userName) throws IOException {
+
     }
 }
