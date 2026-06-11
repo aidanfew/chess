@@ -134,6 +134,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private MakeMoveCommand convertCommandMakeMove(WsMessageContext context) {
-        return new Gson().fromJson(String.valueOf(context), MakeMoveCommand.class);
+        return new Gson().fromJson(context.message(), MakeMoveCommand.class);
     }
 }

@@ -233,6 +233,7 @@ public class ChessClient implements ServerMessageHandler {
                 throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
         }
+        return "";
     }
 
     private ChessMove convertMove(String start, String end) throws ResponseException {
@@ -243,10 +244,12 @@ public class ChessClient implements ServerMessageHandler {
         if (rankVerified(startRank) && rankVerified(endRank)) {
             int newStartFile = fileToColumn(startFile);
             int newEndFile = fileToColumn(endFile);
+            int newStartRank = Character.getNumericValue(startRank);
+            int newEndRank = Character.getNumericValue(endRank);
             if (Objects.equals(newStartFile, 0) || Objects.equals(newEndFile, 0)) {
                 throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: invalid move\u001B[0m");
             } else {
-                return new ChessMove(new ChessPosition(startRank, newStartFile), new ChessPosition(endRank, newEndFile), null);
+                return new ChessMove(new ChessPosition(newStartRank, newStartFile), new ChessPosition(newEndRank, newEndFile), null);
             }
         } else {
             throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: invalid move\u001B[0m");
@@ -269,8 +272,8 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     private boolean rankVerified(char rank) {
-        ArrayList<String> list = new ArrayList<>(List.of("1", "2", "3", "4", "5", "6", "7", "8"));
-        return list.contains(String.valueOf(rank));
+        ArrayList<Character> list = new ArrayList<>(List.of('1', '2', '3', '4', '5', '6', '7', '8'));
+        return list.contains(rank);
     }
 
     public String help() {
@@ -316,7 +319,6 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notifyLoadGame(LoadGameMessage serverMessage) {
-        System.out.println("Load Game received");
         ChessGame game = serverMessage.giveGame();
         ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), perspectiveColor);
         manifestBoard.run();
