@@ -17,6 +17,7 @@ import websocket.messages.ServerMessage;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.net.http.WebSocket;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -43,13 +44,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void handleMessage(@NotNull WsMessageContext wsMessageContext) throws Exception {
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
-            switch (userGameCommand.getCommandType()) {
-                case CONNECT -> connect((WebSocketSession) wsMessageContext.session,
-                        gameSqlDAO.getGame(userGameCommand.getGameID()).game(),
-                        authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
+            if (gameSqlDAO.getGame(userGameCommand.getGameID()) == null || authSqlDAO.getAuth(userGameCommand.getAuthToken()) == null) {
+                if (gameSqlDAO.getGame(userGameCommand.getGameID()) == null) {
+                    error((WebSocketSession) wsMessageContext.session, "Error: invalid Game ID");
+                } else {
+                    error((WebSocketSession) wsMessageContext.session, "Error: user unauthorized");
+                }
+            } else {
+                switch (userGameCommand.getCommandType()) {
+                    case CONNECT -> connect((WebSocketSession) wsMessageContext.session,
+                            gameSqlDAO.getGame(userGameCommand.getGameID()).game(),
+                            authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
+                }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            } catch(Exception e){
+                e.printStackTrace();
         }
     }
 
@@ -57,6 +67,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.add(session);
         ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
         connections.broadcastConnect(session, serverMessage, userName, "connected");
+    }
+
+    private void error(WebSocketSession session, String message) throws IOException {
+        connections.sendError(session, message);
     }
 
     private void leave(WebSocketSession session, String userName) throws IOException {

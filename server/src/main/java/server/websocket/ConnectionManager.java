@@ -3,6 +3,7 @@ package server.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
+import websocket.messages.ErrorMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -64,6 +65,14 @@ public class ConnectionManager {
                     System.out.println(json);
                 }
             }
+        }
+    }
+
+    public void sendError(WebSocketSession session, String errorMessage) throws IOException {
+        if (session.isOpen()) {
+            ErrorMessage errorType = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
+            String json = new Gson().toJson(errorType);
+            session.getRemote().sendString(json);
         }
     }
 
