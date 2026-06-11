@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import javax.swing.*;
@@ -52,7 +53,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(WebSocketSession session, ChessGame game, String userName) throws IOException {
+        connections.add(session);
         ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+        ServerMessage notifyMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         connections.broadcastConnect(session, serverMessage, userName, "connected");
     }
 }

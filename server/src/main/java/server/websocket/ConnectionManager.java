@@ -41,6 +41,7 @@ public class ConnectionManager {
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);
+            System.out.println(connections);
             for (WebSocketSession s : connections.values()) {
                 if (!s.equals(session)) {
                     s.getRemote().sendString(message);
