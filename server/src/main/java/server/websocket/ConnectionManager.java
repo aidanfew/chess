@@ -1,9 +1,11 @@
 package server.websocket;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.ErrorMessage;
+import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
@@ -77,7 +79,28 @@ public class ConnectionManager {
         }
     }
 
-    public void
+    public void broadcastMove(WebSocketSession session, String userName, String action, String endMove) throws IOException {
+        String message = actionNotification(userName, action) + " to " + endMove;
+        if (session.isOpen()) {
+            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            String json = new Gson().toJson(notificationMessage);
+            for (WebSocketSession s : connections.values()) {
+                if (!s.equals(session)) {
+                    s.getRemote().sendString(json);
+                }
+            }
+        }
+    }
+
+    public void broadcastBoard(WebSocketSession session, ChessGame game) throws IOException {
+        if (session.isOpen()) {
+            LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+            String json = new Gson().toJson(loadGameMessage);
+            for (WebSocketSession s : connections.values()) {
+                s.getRemote().sendString(json);
+            }
+        }
+    }
 
     public String actionNotification(String userName, String action) {
         return userName + " has " + action;

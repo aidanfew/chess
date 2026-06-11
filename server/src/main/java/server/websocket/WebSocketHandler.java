@@ -9,6 +9,7 @@ import dataaccess.GameSqlDAO;
 import dataaccess.UserSqlDAO;
 import exception.ResponseException;
 import io.javalin.websocket.*;
+import model.GameData;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
@@ -49,9 +50,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             UserGameCommand userGameCommand = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
             if (gameSqlDAO.getGame(userGameCommand.getGameID()) == null || authSqlDAO.getAuth(userGameCommand.getAuthToken()) == null) {
                 if (gameSqlDAO.getGame(userGameCommand.getGameID()) == null) {
-                    error((WebSocketSession) wsMessageContext.session, "Error: invalid Game ID");
+                    error((WebSocketSession) wsMessageContext.session, "invalid Game ID");
                 } else {
-                    error((WebSocketSession) wsMessageContext.session, "Error: user unauthorized");
+                    error((WebSocketSession) wsMessageContext.session, "user unauthorized");
                 }
             } else {
                 switch (userGameCommand.getCommandType()) {
@@ -62,7 +63,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
                     case MAKE_MOVE -> makeMove((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
-                            convertCommandMakeMove(wsMessageContext).dumpMove());
+                            convertCommandMakeMove(wsMessageContext).sendMove(),
+                            gameSqlDAO.getGame(userGameCommand.getGameID()));
                 }
             }
 
@@ -78,7 +80,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void error(WebSocketSession session, String message) throws IOException {
-        connections.sendError(session, message);
+        connections.sendError(session, "\u001B[31mError: " + message + "\u001B[0m");
     }
 
     private void leave(WebSocketSession session, String userName) throws IOException {
@@ -86,8 +88,49 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcastLeave(session, userName, "left");
     }
 
-    private void makeMove(WebSocketSession session, String userName, ChessMove move, ) throws IOException {
+    private void makeMove(WebSocketSession session, String userName, ChessMove move, GameData gameData) throws IOException {
+        ChessGame game = gameData.game();
+        if (!Objects.equals(userName, gameData.whiteUsername()) || !Objects.equals(userName, gameData.blackUsername())) {
+            error(session, "You are not in play");
+        }
+        if ((Objects.equals(userName, gameData.whiteUsername())
+                && !Objects.equals(ChessGame.TeamColor.WHITE, gameData.game().getTeamTurn())) ||
+                (Objects.equals(userName, gameData.blackUsername())
+                        && !Objects.equals(ChessGame.TeamColor.BLACK, gameData.game().getTeamTurn()))) {
+            error(session, "Not your turn");
+        }
+        try {
+            game.setBoard(gameData.game().getBoard());
+            game.makeMove(move);
+            GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(),
+                    gameData.gameName(), game);
+            gameSqlDAO.replaceGame(gameData.gameID(), null, newGameData);
+            connections.broadcastMove(session, userName, "moved", reconvertMove(move));
+            connections.broadcastBoard(session, newGameData.game());
+        } catch (Exception e) {
+            error(session, "invalid move");
+        }
 
+    }
+
+    private String reconvertMove(ChessMove move) {
+        String col = columnToFile(move.getEndPosition().getColumn());
+        String row = columnToFile(move.getEndPosition().getRow());
+        return col + row;
+    }
+
+    private String columnToFile(int col) {
+        return switch (col) {
+            case 1 -> "a";
+            case 2 -> "b";
+            case 3 -> "c";
+            case 4 -> "d";
+            case 5 -> "e";
+            case 6 -> "f";
+            case 7 -> "g";
+            case 8 -> "h";
+            default -> "i";
+        };
     }
 
     private MakeMoveCommand convertCommandMakeMove(WsMessageContext context) {

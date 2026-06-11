@@ -81,7 +81,7 @@ public class ChessClient implements ServerMessageHandler {
                 return switch (cmd) {
                     case "quit" -> "quit";
                     case "leave" -> leave();
-//                    case "move" -> makeMove();
+                    case "move" -> makeMove(params);
                     default -> help();
                 };
             }
@@ -173,10 +173,10 @@ public class ChessClient implements ServerMessageHandler {
                     ws.webSocketFacadeConnect(authToken, params[0]);
                     perspectiveColor = params[1];
                     state = State.GAMEPLAY;
-                    ChessBoard board = new ChessBoard();
-                    board.resetBoard();
-                    ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
-                    manifestBoard.run();
+//                    ChessBoard board = new ChessBoard();
+//                    board.resetBoard();
+//                    ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
+//                    manifestBoard.run();
                 } catch (Exception e) {
                     throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
                 }
@@ -229,6 +229,8 @@ public class ChessClient implements ServerMessageHandler {
             try {
                 ChessMove move = convertMove(params[0], params[1]);
                 ws.webSocketFacadeMakeMove(authToken, move);
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
         }
     }
@@ -242,7 +244,7 @@ public class ChessClient implements ServerMessageHandler {
             int newStartFile = fileToColumn(startFile);
             int newEndFile = fileToColumn(endFile);
             if (Objects.equals(newStartFile, 0) || Objects.equals(newEndFile, 0)) {
-                return null;
+                throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: invalid move\u001B[0m");
             } else {
                 return new ChessMove(new ChessPosition(startRank, newStartFile), new ChessPosition(endRank, newEndFile), null);
             }
