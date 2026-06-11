@@ -90,14 +90,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(WebSocketSession session, String userName, ChessMove move, GameData gameData) throws IOException {
         ChessGame game = gameData.game();
-        if (!Objects.equals(userName, gameData.whiteUsername()) || !Objects.equals(userName, gameData.blackUsername())) {
+        if (!Objects.equals(userName, gameData.whiteUsername()) && !Objects.equals(userName, gameData.blackUsername())) {
             error(session, "You are not in play");
+            return;
         }
-        if ((Objects.equals(userName, gameData.whiteUsername())
-                && !Objects.equals(ChessGame.TeamColor.WHITE, gameData.game().getTeamTurn())) ||
-                (Objects.equals(userName, gameData.blackUsername())
-                        && !Objects.equals(ChessGame.TeamColor.BLACK, gameData.game().getTeamTurn()))) {
+        if ((Objects.equals(userName, gameData.whiteUsername()) && !Objects.equals(ChessGame.TeamColor.WHITE, gameData.game().getTeamTurn())) ||
+                (Objects.equals(userName, gameData.blackUsername()) && !Objects.equals(ChessGame.TeamColor.BLACK, gameData.game().getTeamTurn()))) {
             error(session, "Not your turn");
+            return;
         }
         try {
             game.setBoard(gameData.game().getBoard());

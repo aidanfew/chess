@@ -42,7 +42,6 @@ public class ConnectionManager {
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);
-            System.out.println(connections);
 
             String message = actionNotification(userName, action);
             NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
@@ -50,7 +49,6 @@ public class ConnectionManager {
                 if (!s.equals(session)) {
                     var json = new Gson().toJson(notificationMessage);
                     s.getRemote().sendString(json);
-                    System.out.println(message);
                 }
             }
         }
@@ -64,7 +62,6 @@ public class ConnectionManager {
                 if (!s.equals(session)) {
                     String json = new Gson().toJson(notificationMessage);
                     s.getRemote().sendString(json);
-                    System.out.println(json);
                 }
             }
             connections.remove(session);

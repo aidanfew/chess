@@ -6,6 +6,7 @@ import chess.ChessMove;
 import chess.ChessPosition;
 import client.websocket.ServerMessageHandler;
 import client.websocket.WebSocketFacade;
+import com.google.gson.Gson;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
@@ -13,6 +14,7 @@ import ui.ManifestBoard;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import java.sql.Array;
 import java.util.*;
@@ -319,6 +321,7 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notifyLoadGame(LoadGameMessage serverMessage) {
+        System.out.println();
         ChessGame game = serverMessage.giveGame();
         ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), perspectiveColor);
         manifestBoard.run();
@@ -326,11 +329,11 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notifyError(ErrorMessage serverMessage) {
-        System.out.println(serverMessage);
+        System.out.println(serverMessage.errorMessage);
     }
 
     @Override
     public void notifyNotification(NotificationMessage serverMessage) {
-        System.out.println(serverMessage);
+        System.out.println();
     }
 }

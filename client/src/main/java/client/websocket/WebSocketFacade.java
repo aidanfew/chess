@@ -33,7 +33,6 @@ public class WebSocketFacade extends Endpoint {
 
                 @Override
                 public void onMessage(String message) {
-                    System.out.println(message);
                     ServerMessage type = new Gson().fromJson(message, ServerMessage.class);
                     if (type.getServerMessageType().equals(ServerMessage.ServerMessageType.LOAD_GAME)) {
                         LoadGameMessage gameMessage = new Gson().fromJson(message, LoadGameMessage.class);
@@ -78,7 +77,6 @@ public class WebSocketFacade extends Endpoint {
     public void webSocketFacadeMakeMove(String authToken, ChessMove move) throws ResponseException {
         try {
             var makeMoveCommand = new MakeMoveCommand(MakeMoveCommand.CommandType.MAKE_MOVE, authToken, currentGameID, move);
-            System.out.println(new Gson().toJson(makeMoveCommand));
             this.session.getBasicRemote().sendText(new Gson().toJson(makeMoveCommand));
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
