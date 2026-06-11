@@ -65,6 +65,7 @@ public class ConnectionManager {
                     System.out.println(json);
                 }
             }
+            connections.remove(session);
         }
     }
 

@@ -16,6 +16,7 @@ public class WebSocketFacade extends Endpoint {
 
     Session session;
     ServerMessageHandler serverMessageHandler;
+    int currentGameID;
 
     public WebSocketFacade(String url, ServerMessageHandler serverMessageHandler) throws ResponseException {
         try {
@@ -37,11 +38,9 @@ public class WebSocketFacade extends Endpoint {
                         serverMessageHandler.notifyLoadGame(gameMessage);
                     } else if (type.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
                         ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
-                        System.out.println("Load Game Type detected in onmessage");
                         serverMessageHandler.notifyError(errorMessage);
                     } else {
                         NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
-                        System.out.println("Load Game Type detected in onmessage");
                         serverMessageHandler.notifyNotification(notificationMessage);
                     }
                 }
@@ -59,14 +58,15 @@ public class WebSocketFacade extends Endpoint {
         try {
             var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, Integer.parseInt(gameID));
             this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
+            currentGameID = Integer.parseInt(gameID);
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
         }
     }
 
-    public void webSocketFacadeLeave(String authToken, int gameID) throws ResponseException {
+    public void webSocketFacadeLeave(String authToken) throws ResponseException {
         try {
-            var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID);
+            var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID);
             this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());

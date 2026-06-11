@@ -55,6 +55,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     case CONNECT -> connect((WebSocketSession) wsMessageContext.session,
                             gameSqlDAO.getGame(userGameCommand.getGameID()).game(),
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
+                    case LEAVE -> leave((WebSocketSession) wsMessageContext.session,
+                            authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
                 }
             }
 

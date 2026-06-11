@@ -11,7 +11,6 @@ import ui.ManifestBoard;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
 import java.util.*;
 
@@ -77,7 +76,7 @@ public class ChessClient implements ServerMessageHandler {
             } else {
                 return switch (cmd) {
                     case "quit" -> "quit";
-                    case "leave" -> returnToLogin();
+                    case "leave" -> leave();
                     default -> help();
                 };
             }
@@ -207,6 +206,17 @@ public class ChessClient implements ServerMessageHandler {
         }
     }
 
+    private String leave() throws ResponseException {
+        assertInGameplay();
+        try {
+            ws.webSocketFacadeLeave(authToken);
+            state = State.SIGNEDIN;
+            return "You are no longer playing\n" + help();
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+        }
+    }
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
@@ -234,13 +244,14 @@ public class ChessClient implements ServerMessageHandler {
 
     private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
-            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mYou must sign in");
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: You must sign in");
         }
     }
 
-    private String returnToLogin() {
-        state = State.SIGNEDIN;
-        return "You are no longer playing\n" + help();
+    private void assertInGameplay() throws ResponseException {
+        if (state != State.GAMEPLAY) {
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: You are not in a game");
+        }
     }
 
     @Override
@@ -253,11 +264,11 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notifyError(ErrorMessage serverMessage) {
-        System.out.println("Error received");
+        System.out.println(serverMessage);
     }
 
     @Override
     public void notifyNotification(NotificationMessage serverMessage) {
-        System.out.println("Notification received ");
+        System.out.println(serverMessage);
     }
 }
