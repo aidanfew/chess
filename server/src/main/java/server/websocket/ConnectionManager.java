@@ -36,18 +36,38 @@ public class ConnectionManager {
     }
 
     public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage, String userName, String action) throws IOException {
-        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-        String message = notificationMessage.actionNotification(userName, action);
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);
             System.out.println(connections);
+
+            String message = actionNotification(userName, action);
+            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
             for (WebSocketSession s : connections.values()) {
                 if (!s.equals(session)) {
-                    s.getRemote().sendString(message);
+                    var json = new Gson().toJson(notificationMessage);
+                    s.getRemote().sendString(json);
                     System.out.println(message);
                 }
             }
         }
+    }
+
+    public void broadcastLeave(WebSocketSession session, String userName, String action) throws IOException {
+        String message = actionNotification(userName, action);
+        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        if (session.isOpen()) {
+            for (WebSocketSession s : connections.values()) {
+                if (!s.equals(session)) {
+                    String json = new Gson().toJson(notificationMessage);
+                    s.getRemote().sendString(json);
+                    System.out.println(json);
+                }
+            }
+        }
+    }
+
+    public String actionNotification(String userName, String action) {
+        return userName + " has " + action;
     }
 }

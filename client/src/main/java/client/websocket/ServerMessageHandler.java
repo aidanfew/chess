@@ -12,5 +12,4 @@ public interface ServerMessageHandler {
 
     void notifyNotification(NotificationMessage serverMessage);
 
-
 }

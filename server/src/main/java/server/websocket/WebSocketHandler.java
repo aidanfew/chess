@@ -29,6 +29,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleClose(@NotNull WsCloseContext wsCloseContext) throws Exception {
+        connections.remove((WebSocketSession) wsCloseContext.session);
         System.out.println("Websocket closed");
     }
 
@@ -55,7 +56,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(WebSocketSession session, ChessGame game, String userName) throws IOException {
         connections.add(session);
         ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-        ServerMessage notifyMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         connections.broadcastConnect(session, serverMessage, userName, "connected");
+    }
+
+    private void leave(WebSocketSession session, String userName) throws IOException {
+        connections.remove(session);
+        connections.broadcastLeave(session, userName, "left");
     }
 }

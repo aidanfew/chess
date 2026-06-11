@@ -1,12 +1,10 @@
 package websocket.messages;
 
 public class NotificationMessage extends ServerMessage {
+    String message;
 
-    public NotificationMessage(ServerMessageType type) {
+    public NotificationMessage(ServerMessageType type, String message) {
         super(type);
-    }
-
-    public String actionNotification(String userName, String action) {
-        return userName + " has " + action;
+        this.message = message;
     }
 }

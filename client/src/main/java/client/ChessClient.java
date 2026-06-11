@@ -77,7 +77,7 @@ public class ChessClient implements ServerMessageHandler {
             } else {
                 return switch (cmd) {
                     case "quit" -> "quit";
-                    case "return" -> returnToLogin();
+                    case "leave" -> returnToLogin();
                     default -> help();
                 };
             }
@@ -226,8 +226,8 @@ public class ChessClient implements ServerMessageHandler {
         } else {
             return """
                     \u001B[33mhelp\u001B[0m - for possible commands
-                    \u001B[34mquit\u001B[0m - to quit
-                    \u001B[33mreturn\u001B[0m - to go back to menu
+                    \u001B[34mquit\u001B[0m - to exit the system
+                    \u001B[33mleave\u001B[0m - to leave the game
                     """;
         }
     }
