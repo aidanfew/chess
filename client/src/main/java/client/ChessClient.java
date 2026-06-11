@@ -223,31 +223,34 @@ public class ChessClient implements ServerMessageHandler {
         }
     }
 
-//    private String makeMove(String... params) throws ResponseException {
-//        assertInGameplay();
-//        if (params.length >= 2) {
-//            try {
-//
-//            }
-//        }
-//    }
+    private String makeMove(String... params) throws ResponseException {
+        assertInGameplay();
+        if (params.length >= 2) {
+            try {
+                ChessMove move = convertMove(params[0], params[1]);
+                ws.webSocketFacadeMakeMove(authToken, move);
+            }
+        }
+    }
 
-//    private ChessMove convertMove(String start, String end) {
-//        char startFile = start.charAt(0);
-//        char startRank = start.charAt(1);
-//        char endFile = end.charAt(0);
-//        char endRank = end.charAt(1);
-//        if (rankVerified(startRank) && rankVerified(endRank)) {
-//            int newStartFile = fileToColumn(startFile);
-//            int newEndFile = fileToColumn(endFile);
-//            if (Objects.equals(newStartFile, 0) || Objects.equals(newEndFile, 0)) {
-//                return null;
-//            } else {
-//                return new ChessMove(new ChessPosition(startRank, newStartFile), new ChessPosition(endRank, newEndFile), )
-//            }
-//        }
-//
-//    }
+    private ChessMove convertMove(String start, String end) throws ResponseException {
+        char startFile = start.charAt(0);
+        char startRank = start.charAt(1);
+        char endFile = end.charAt(0);
+        char endRank = end.charAt(1);
+        if (rankVerified(startRank) && rankVerified(endRank)) {
+            int newStartFile = fileToColumn(startFile);
+            int newEndFile = fileToColumn(endFile);
+            if (Objects.equals(newStartFile, 0) || Objects.equals(newEndFile, 0)) {
+                return null;
+            } else {
+                return new ChessMove(new ChessPosition(startRank, newStartFile), new ChessPosition(endRank, newEndFile), null);
+            }
+        } else {
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: invalid move\u001B[0m");
+        }
+
+    }
 
     private int fileToColumn(char file) {
         return switch (file) {

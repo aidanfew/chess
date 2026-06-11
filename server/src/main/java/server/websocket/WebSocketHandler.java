@@ -1,6 +1,7 @@
 package server.websocket;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import com.google.gson.Gson;
 import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
@@ -9,6 +10,7 @@ import dataaccess.UserSqlDAO;
 import exception.ResponseException;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.LoadGameMessage;
@@ -18,6 +20,7 @@ import websocket.messages.ServerMessage;
 import javax.swing.*;
 import java.io.IOException;
 import java.net.http.WebSocket;
+import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -57,7 +60,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
                     case LEAVE -> leave((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
-//                    case MAKE_MOVE -> makeMove();
+                    case MAKE_MOVE -> makeMove((WebSocketSession) wsMessageContext.session,
+                            authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
+                            convertCommandMakeMove(wsMessageContext).dumpMove());
                 }
             }
 
@@ -81,7 +86,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcastLeave(session, userName, "left");
     }
 
-    private void makeMove(WebSocketSession session, String userName) throws IOException {
+    private void makeMove(WebSocketSession session, String userName, ChessMove move, ) throws IOException {
 
+    }
+
+    private MakeMoveCommand convertCommandMakeMove(WsMessageContext context) {
+        return new Gson().fromJson(String.valueOf(context), MakeMoveCommand.class);
     }
 }
