@@ -38,11 +38,11 @@ public class WebSocketFacade extends Endpoint {
                     } else if (type.getServerMessageType().equals(ServerMessage.ServerMessageType.ERROR)) {
                         ErrorMessage errorMessage = new Gson().fromJson(message, ErrorMessage.class);
                         System.out.println("Load Game Type detected in onmessage");
-                        serverMessageHandler.notifyError(type);
+                        serverMessageHandler.notifyError(errorMessage);
                     } else {
                         NotificationMessage notificationMessage = new Gson().fromJson(message, NotificationMessage.class);
                         System.out.println("Load Game Type detected in onmessage");
-                        serverMessageHandler.notifyNotification(type);
+                        serverMessageHandler.notifyNotification(notificationMessage);
                     }
                 }
             });

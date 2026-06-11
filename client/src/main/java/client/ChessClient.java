@@ -8,7 +8,9 @@ import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
 import ui.ManifestBoard;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
@@ -250,12 +252,12 @@ public class ChessClient implements ServerMessageHandler {
     }
 
     @Override
-    public void notifyError(ServerMessage serverMessage) {
+    public void notifyError(ErrorMessage serverMessage) {
         System.out.println("Error received");
     }
 
     @Override
-    public void notifyNotification(ServerMessage serverMessage) {
+    public void notifyNotification(NotificationMessage serverMessage) {
         System.out.println("Notification received ");
     }
 }

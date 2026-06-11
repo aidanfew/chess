@@ -3,10 +3,12 @@ package server.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 
 import java.io.IOException;
+import java.net.http.WebSocket;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -33,10 +35,18 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage) throws IOException {
+    public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage, String userName, String action) throws IOException {
+        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+        String message = notificationMessage.actionNotification(userName, action);
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);
+            for (WebSocketSession s : connections.values()) {
+                if (!s.equals(session)) {
+                    s.getRemote().sendString(message);
+                    System.out.println(message);
+                }
+            }
         }
     }
 }

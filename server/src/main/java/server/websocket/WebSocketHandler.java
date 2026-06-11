@@ -2,7 +2,10 @@ package server.websocket;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import dataaccess.AuthSqlDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameSqlDAO;
+import dataaccess.UserSqlDAO;
 import exception.ResponseException;
 import io.javalin.websocket.*;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +20,11 @@ import java.io.IOException;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    private GameSqlDAO gameSqlDAO = new GameSqlDAO();
+    private final GameSqlDAO gameSqlDAO = new GameSqlDAO();
+    private final AuthSqlDAO authSqlDAO = new AuthSqlDAO();
+
+    public WebSocketHandler() throws DataAccessException {
+    }
 
     @Override
     public void handleClose(@NotNull WsCloseContext wsCloseContext) throws Exception {
@@ -35,15 +42,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand userGameCommand = new Gson().fromJson(wsMessageContext.message(), UserGameCommand.class);
             switch (userGameCommand.getCommandType()) {
-                case CONNECT -> connect((WebSocketSession) wsMessageContext.session, gameSqlDAO.getGame(userGameCommand.getGameID()).game());
+                case CONNECT -> connect((WebSocketSession) wsMessageContext.session,
+                        gameSqlDAO.getGame(userGameCommand.getGameID()).game(),
+                        authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void connect(WebSocketSession session, ChessGame game) throws IOException {
+    private void connect(WebSocketSession session, ChessGame game, String userName) throws IOException {
         ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-        connections.broadcastConnect(session, serverMessage);
+        connections.broadcastConnect(session, serverMessage, userName, "connected");
     }
 }
