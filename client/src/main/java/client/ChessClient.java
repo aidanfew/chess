@@ -26,6 +26,7 @@ public class ChessClient implements ServerMessageHandler {
     private final HashMap<String, ListGamesHelperResult> gameHashMap = new HashMap<>();
     private final WebSocketFacade ws;
     private String perspectiveColor = "WHITE";
+    private ChessGame currentGame;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -85,6 +86,7 @@ public class ChessClient implements ServerMessageHandler {
                     case "leave" -> leave();
                     case "move" -> makeMove(params);
                     case "resign" -> resign();
+                    case "redraw" -> redraw();
                     default -> help();
                 };
             }
@@ -233,12 +235,45 @@ public class ChessClient implements ServerMessageHandler {
 
     private String resign() throws ResponseException {
         assertInGameplay();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("\u001B[33mAre you sure you want to resign? <yes/no>\u001B[0m");
+        String inputLine = scanner.nextLine().toLowerCase();
+        if (Objects.equals(inputLine, "yes")) {
+            try {
+                ws.webSocketFacadeResign(authToken);
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+            }
+        } else {
+            return help();
+        }
+        return "";
+    }
+
+    private String redraw() throws ResponseException {
         try {
-            ws.webSocketFacadeResign(authToken);
+            assertInGameplay();
+            ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
+            manifestBoard.run();
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
         }
         return "";
+    }
+
+    private String highlight(String square) throws ResponseException {
+        try {
+            assertInGameplay();
+            ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
+            int file = fileToColumn(square.charAt(0));
+            int rank = Character.getNumericValue(square.charAt(1));
+            Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(rank, file));
+            ArrayList<ChessPosition> positions = new ArrayList<>();
+            positions.add(new ChessPosition(rank, file));
+            for (ChessMove move : validMoves) {
+                positions.add(move.getEndPosition());
+            }
+        }
     }
 
     private ChessMove convertMove(String start, String end) throws ResponseException {
@@ -304,7 +339,7 @@ public class ChessClient implements ServerMessageHandler {
                     \u001B[33mleave\u001B[0m - to leave the game
                     \u001B[34mmove <START> <END>\u001B[0m - to make a move
                     \u001B[33mresign\u001B[0m - to forfeit the game
-                    \u001B[34mhighlight\u001B[0m - your legal moves
+                    \u001B[34mhighlight <square>\u001B[0m - to see valid moves for the piece
                     \u001B[33mquit\u001B[0m - to exit the system
                     """;
         }
@@ -328,6 +363,7 @@ public class ChessClient implements ServerMessageHandler {
         ChessGame game = serverMessage.giveGame();
         ManifestBoard manifestBoard = new ManifestBoard(game.getBoard(), perspectiveColor);
         manifestBoard.run();
+        currentGame = game;
     }
 
     @Override

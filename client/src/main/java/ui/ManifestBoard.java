@@ -1,12 +1,12 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Random;
 
@@ -40,6 +40,15 @@ public class ManifestBoard {
         out.print(SET_TEXT_COLOR_WHITE);
     }
 
+    public void runHighlights(ArrayList<ChessPosition> positions) {
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+
+        out.print(ERASE_SCREEN);
+
+        drawHeaders(out, ChessGame.TeamColor.valueOf(color));
+
+    }
+
     private static void drawHeaders(PrintStream out, ChessGame.TeamColor playerColor) {
         String[] files;
         if (Objects.equals(playerColor, ChessGame.TeamColor.WHITE)) {
@@ -59,7 +68,6 @@ public class ManifestBoard {
     private static void drawHeader(PrintStream out, String headerText) {
         int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
         printHeaderText(out, headerText);
-//        out.print(EMPTY.repeat(1));
     }
 
     private static void printHeaderText(PrintStream out, String player) {
@@ -71,6 +79,18 @@ public class ManifestBoard {
     }
 
     private void drawChessBoard(PrintStream out) {
+        if (Objects.equals(ChessGame.TeamColor.WHITE, ChessGame.TeamColor.valueOf(color))) {
+            for (int boardRow = 8; boardRow > BOARD_SIZE_IN_SQUARES - 10; --boardRow) {
+                drawWhiteRow(out, boardRow);
+            }
+        } else {
+            for (int boardRow = 1; boardRow < BOARD_SIZE_IN_SQUARES - 1; ++boardRow) {
+                drawBlackRow(out, boardRow);
+            }
+        }
+    }
+
+    private void highlightDrawChessBoard(PrintStream out, ArrayList<ChessPosition> positions) {
         if (Objects.equals(ChessGame.TeamColor.WHITE, ChessGame.TeamColor.valueOf(color))) {
             for (int boardRow = 8; boardRow > BOARD_SIZE_IN_SQUARES - 10; --boardRow) {
                 drawWhiteRow(out, boardRow);
