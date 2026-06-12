@@ -87,6 +87,7 @@ public class ChessClient implements ServerMessageHandler {
                     case "move" -> makeMove(params);
                     case "resign" -> resign();
                     case "redraw" -> redraw();
+                    case "highlight" -> highlight(params);
                     default -> help();
                 };
             }
@@ -261,19 +262,31 @@ public class ChessClient implements ServerMessageHandler {
         return "";
     }
 
-    private String highlight(String square) throws ResponseException {
-        try {
-            assertInGameplay();
-            ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
-            int file = fileToColumn(square.charAt(0));
-            int rank = Character.getNumericValue(square.charAt(1));
-            Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(rank, file));
-            ArrayList<ChessPosition> positions = new ArrayList<>();
-            positions.add(new ChessPosition(rank, file));
-            for (ChessMove move : validMoves) {
-                positions.add(move.getEndPosition());
+    private String highlight(String... params) throws ResponseException {
+        if (params.length >= 1) {
+            try {
+                assertInGameplay();
+                String square = params[0];
+                ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
+                int file = fileToColumn(square.charAt(0));
+                int rank = Character.getNumericValue(square.charAt(1));
+                if (currentGame.getBoard().getPiece(new ChessPosition(rank, file)) == null) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: invalid square\u001B[0m");
+                }
+                Collection<ChessMove> validMoves = currentGame.validMoves(new ChessPosition(rank, file));
+                ArrayList<ChessPosition> positions = new ArrayList<>();
+                positions.add(new ChessPosition(rank, file));
+                for (ChessMove move : validMoves) {
+                    positions.add(move.getEndPosition());
+                }
+                manifestBoard.runHighlights(positions);
+            } catch (Exception e) {
+                throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
+        } else {
+            throw new ResponseException(ResponseException.Code.ClientError, "\u001B[31mError: expected highlight <position>\u001B[0m");
         }
+        return "";
     }
 
     private ChessMove convertMove(String start, String end) throws ResponseException {

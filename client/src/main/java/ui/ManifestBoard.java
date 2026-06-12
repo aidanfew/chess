@@ -47,6 +47,12 @@ public class ManifestBoard {
 
         drawHeaders(out, ChessGame.TeamColor.valueOf(color));
 
+        highlightDrawChessBoard(out, positions);
+
+        drawHeaders(out, ChessGame.TeamColor.valueOf(color));
+
+        out.print(SET_BG_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_WHITE);
     }
 
     private static void drawHeaders(PrintStream out, ChessGame.TeamColor playerColor) {
@@ -93,11 +99,11 @@ public class ManifestBoard {
     private void highlightDrawChessBoard(PrintStream out, ArrayList<ChessPosition> positions) {
         if (Objects.equals(ChessGame.TeamColor.WHITE, ChessGame.TeamColor.valueOf(color))) {
             for (int boardRow = 8; boardRow > BOARD_SIZE_IN_SQUARES - 10; --boardRow) {
-                drawWhiteRow(out, boardRow);
+                drawHighlightWhiteRow(out, boardRow, positions);
             }
         } else {
             for (int boardRow = 1; boardRow < BOARD_SIZE_IN_SQUARES - 1; ++boardRow) {
-                drawBlackRow(out, boardRow);
+                drawHighlightBlackRow(out, boardRow, positions);
             }
         }
     }
@@ -119,10 +125,28 @@ public class ManifestBoard {
         out.println();
     }
 
+    private void drawHighlightWhiteRow(PrintStream out, int row, ArrayList<ChessPosition> positions) {
+        setUpRowColors(out, row);
+        for (int squareCol = 1; squareCol < BOARD_SIZE_IN_SQUARES - 1; ++squareCol) {
+            drawHighlightRowsOfSquares(out, row, squareCol, positions);
+        }
+        setUpRowColors(out, row);
+        out.println();
+    }
+
     private void drawBlackRow(PrintStream out, int row) {
         setUpRowColors(out, row);
         for (int squareCol = 8; squareCol > BOARD_SIZE_IN_SQUARES - 10; --squareCol) {
             drawRowsOfSquares(out, row, squareCol);
+        }
+        setUpRowColors(out, row);
+        out.println();
+    }
+
+    private void drawHighlightBlackRow(PrintStream out, int row, ArrayList<ChessPosition> positions) {
+        setUpRowColors(out, row);
+        for (int squareCol = 8; squareCol > BOARD_SIZE_IN_SQUARES - 10; --squareCol) {
+            drawHighlightRowsOfSquares(out, row, squareCol, positions);
         }
         setUpRowColors(out, row);
         out.println();
@@ -146,6 +170,26 @@ public class ManifestBoard {
             out.print(RESET_BG_COLOR);
         }
 
+    private void drawHighlightRowsOfSquares(PrintStream out, int row, int col, ArrayList<ChessPosition> positions) {
+        ChessPosition position = new ChessPosition(row, col);
+        ChessPiece piece = board.getPiece(position);
+        if (positions.contains(position)) {
+            out.print(SET_BG_COLOR_GREEN);
+        } else if ((position.getColumn() + position.getRow()) % 2 == 0) {
+            out.print(SET_BG_COLOR_DARK_GREY);
+        } else {
+            out.print(SET_BG_COLOR_BLUE);
+        }
+        if (piece != null) {
+            ChessPiece.PieceType type = board.getPiece(position).getPieceType();
+            ChessGame.TeamColor color = board.getPiece(position).getTeamColor();
+            printPlayer(out, color, type);
+        } else {
+            printPlayer(out, null, null);
+        }
+        out.print(RESET_BG_COLOR);
+    }
+
     private static void printPlayer(PrintStream out, ChessGame.TeamColor color, ChessPiece.PieceType piece) {
         if (Objects.equals(color, ChessGame.TeamColor.WHITE)) {
             out.print(SET_TEXT_COLOR_WHITE);
@@ -164,8 +208,4 @@ public class ManifestBoard {
         out.print(RESET_TEXT_COLOR);
         out.print(RESET_BG_COLOR);
     }
-
-
-
-
 }
