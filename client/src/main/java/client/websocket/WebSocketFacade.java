@@ -1,6 +1,7 @@
 package client.websocket;
 
 import chess.ChessMove;
+import chess.ChessPiece;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import jakarta.websocket.*;

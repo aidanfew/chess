@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameSqlDAO;
+import exception.ResponseException;
 import io.javalin.websocket.*;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;

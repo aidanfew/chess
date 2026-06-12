@@ -1,12 +1,8 @@
 package client;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPosition;
+import chess.*;
 import client.websocket.ServerMessageHandler;
 import client.websocket.WebSocketFacade;
-import com.google.gson.Gson;
 import exception.ResponseException;
 import results.*;
 import server.ServerFacade;
@@ -14,9 +10,7 @@ import ui.ManifestBoard;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
 
-import java.sql.Array;
 import java.util.*;
 
 public class ChessClient implements ServerMessageHandler {
@@ -226,12 +220,59 @@ public class ChessClient implements ServerMessageHandler {
         if (params.length >= 2) {
             try {
                 ChessMove move = convertMove(params[0], params[1]);
-                ws.webSocketFacadeMakeMove(authToken, move);
+                ChessPiece piece = currentGame.getBoard().getPiece(move.getStartPosition());
+                Collection<ChessMove> validMoves = currentGame.validMoves(move.getStartPosition());
+                if (Objects.equals(piece, ChessPiece.PieceType.PAWN) && validMoves.contains(move)
+                        && Objects.equals(perspectiveColor, "WHITE")
+                        && Objects.equals(move.getEndPosition().getRow(), 8)) {
+                    Scanner scanner = new Scanner(System.in);
+                    String message = """
+                \u001B[33mWhat would you like to promote to?
+                QUEEN
+                BISHOP
+                KNIGHT
+                ROOK\u001B[0m""";
+                    System.out.println(message);
+                    String promotionPiece = scanner.nextLine().toUpperCase();
+                    ChessMove promotionMove = getPromotionMove(move, promotionPiece);
+                    ws.webSocketFacadeMakeMove(authToken, promotionMove);
+                } else if ((Objects.equals(piece, ChessPiece.PieceType.PAWN) && validMoves.contains(move)
+                        && Objects.equals(perspectiveColor, "BLACK")
+                        && Objects.equals(move.getEndPosition().getRow(), 1))){
+                    Scanner scanner = new Scanner(System.in);
+                    String message = """
+                \u001B[33mWhat would you like to promote to?
+                QUEEN
+                BISHOP
+                KNIGHT
+                ROOK\u001B[0m""";
+                    System.out.println(message);
+                    String promotionPiece = scanner.nextLine().toUpperCase();
+                    ChessMove promotionMove = getPromotionMove(move, promotionPiece);
+                    ws.webSocketFacadeMakeMove(authToken, promotionMove);
+                } else {
+                    ws.webSocketFacadeMakeMove(authToken, move);
+                }
             } catch (Exception e) {
                 throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
         }
         return "";
+    }
+
+    private ChessMove getPromotionMove(ChessMove move, String promotionPiece) {
+        ChessPiece.PieceType promotionType = convertPiece(promotionPiece);
+        return new ChessMove(move.getStartPosition(), move.getEndPosition(), promotionType);
+    }
+
+    private ChessPiece.PieceType convertPiece(String piece) {
+        return switch (piece) {
+            case "QUEEN" -> ChessPiece.PieceType.QUEEN;
+            case "BISHOP" -> ChessPiece.PieceType.BISHOP;
+            case "KNIGHT" -> ChessPiece.PieceType.KNIGHT;
+            case "ROOK" -> ChessPiece.PieceType.ROOK;
+            default -> null;
+        };
     }
 
     private String resign() throws ResponseException {
