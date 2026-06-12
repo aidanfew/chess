@@ -84,9 +84,9 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastMate(WebSocketSession session, String type, ChessGame.TeamColor color,
+    public void broadcastMate(WebSocketSession session, String type, String userName,
                               ArrayList<WebSocketSession> sessionList) throws IOException {
-        String message = String.format("%s is in %smate", color.toString(), type);
+        String message = String.format("%s is in %smate", userName, type);
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
         String json = new Gson().toJson(notificationMessage);
         for (WebSocketSession s : sessionList) {

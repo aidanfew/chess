@@ -86,7 +86,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             sessionAndGameMap.get(gameData.gameID()).add(session);
         }
         if (sessionAndGameMap.get(gameData.gameID()).size() > 1) {
-            connections.broadcastAllButRoot(session, userName, "connected", sessionAndGameMap.get(gameData.gameID()));
+            if (Objects.equals(userName, gameData.whiteUsername())) {
+                connections.broadcastAllButRoot(session, userName, "connected as WHITE", sessionAndGameMap.get(gameData.gameID()));
+            } else if (Objects.equals(userName, gameData.blackUsername())) {
+                connections.broadcastAllButRoot(session, userName, "connected as BLACK", sessionAndGameMap.get(gameData.gameID()));
+            } else {
+                connections.broadcastAllButRoot(session, userName, "connected as an observer B)", sessionAndGameMap.get(gameData.gameID()));
+            }
         }
         ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
         connections.broadcastConnect(session, serverMessage);
@@ -99,7 +105,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void leave(WebSocketSession session, String userName, GameData gameData) throws Exception {
         if (Objects.equals(userName, gameData.whiteUsername())) {
             gameSqlDAO.setUserToNull(gameData.gameID(), ChessGame.TeamColor.WHITE);
-        } else {
+        } else if (Objects.equals(userName,gameData.blackUsername())) {
             gameSqlDAO.setUserToNull(gameData.gameID(), ChessGame.TeamColor.BLACK);
         }
         sessionAndGameMap.get(gameData.gameID()).remove(session);
@@ -144,23 +150,23 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameSqlDAO.replaceGame(gameData.gameID(), null, newGameData);
             connections.broadcastMove(session, userName, "moved", reconvertMove(move), list);
             connections.broadcastBoard(session, newGameData.game(), list);
-            if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastGeneralNotification(session, "WHITE is in check", list);
-            } else if (game.isInCheck(ChessGame.TeamColor.BLACK)){
-                connections.broadcastGeneralNotification(session, "BLACK is in check", list);
-            } else if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastMate(session, "check", ChessGame.TeamColor.WHITE, list);
+             if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                connections.broadcastMate(session, "check", gameData.whiteUsername(), list);
                 ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                connections.broadcastMate(session, "check", ChessGame.TeamColor.BLACK, list);
+                connections.broadcastMate(session, "check", gameData.blackUsername(), list);
                 ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
+                connections.broadcastMate(session, "stale", gameData.whiteUsername(), list);
                 ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
-                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
+                connections.broadcastMate(session, "stale", gameData.blackUsername(), list);
                 ENDED_GAMES.add(gameData.gameID());
-            }
+            } else if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
+                 connections.broadcastGeneralNotification(session, gameData.whiteUsername() + " is in check", list);
+             } else if (game.isInCheck(ChessGame.TeamColor.BLACK)) {
+                 connections.broadcastGeneralNotification(session, gameData.blackUsername() + " is in check", list);
+             }
         } catch (Exception e) {
             error(session, "invalid move");
         }
@@ -168,7 +174,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private String reconvertMove(ChessMove move) {
         String col = columnToFile(move.getEndPosition().getColumn());
-        String row = columnToFile(move.getEndPosition().getRow());
+        String row = Integer.toString(move.getEndPosition().getRow());
         return col + row;
     }
 

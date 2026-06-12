@@ -386,6 +386,6 @@ public class ChessClient implements ServerMessageHandler {
 
     @Override
     public void notifyNotification(NotificationMessage serverMessage) {
-        System.out.println();
+        System.out.println(serverMessage.returnMessage());
     }
 }
