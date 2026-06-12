@@ -25,7 +25,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final ConnectionManager connections = new ConnectionManager();
     private final GameSqlDAO gameSqlDAO = new GameSqlDAO();
     private final AuthSqlDAO authSqlDAO = new AuthSqlDAO();
-    public static final ArrayList<Integer> endedGames = new ArrayList<>();
+    public static final ArrayList<Integer> ENDED_GAMES = new ArrayList<>();
     private final HashMap<Integer, ArrayList<WebSocketSession>> sessionAndGameMap = new HashMap<>();
 
     public WebSocketHandler() throws DataAccessException {
@@ -107,7 +107,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(WebSocketSession session, String userName, GameData gameData) throws IOException {
-        if (endedGames.contains(gameData.gameID())) {
+        if (ENDED_GAMES.contains(gameData.gameID())) {
             error(session, "Game is already over");
             return;
         }
@@ -117,12 +117,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
         connections.broadcastGeneralNotification(session, userName + " has resigned",
                 sessionAndGameMap.get(gameData.gameID()));
-        endedGames.add(gameData.gameID());
+        ENDED_GAMES.add(gameData.gameID());
     }
 
     private void makeMove(WebSocketSession session, String userName, ChessMove move, GameData gameData) throws IOException {
         ChessGame game = gameData.game();
-        if (endedGames.contains(gameData.gameID())) {
+        if (ENDED_GAMES.contains(gameData.gameID())) {
             error(session, "Game is over");
             return;
         }
@@ -150,16 +150,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.broadcastGeneralNotification(session, "BLACK is in check", list);
             } else if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
                 connections.broadcastMate(session, "check", ChessGame.TeamColor.WHITE, list);
-                endedGames.add(gameData.gameID());
+                ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
                 connections.broadcastMate(session, "check", ChessGame.TeamColor.BLACK, list);
-                endedGames.add(gameData.gameID());
+                ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
                 connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
-                endedGames.add(gameData.gameID());
+                ENDED_GAMES.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
                 connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
-                endedGames.add(gameData.gameID());
+                ENDED_GAMES.add(gameData.gameID());
             }
         } catch (Exception e) {
             error(session, "invalid move");

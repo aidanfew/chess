@@ -160,6 +160,10 @@ public class ManifestBoard {
         } else {
             out.print(SET_BG_COLOR_BLUE);
         }
+        drawRowsHelper(out, position, piece);
+        }
+
+    private void drawRowsHelper(PrintStream out, ChessPosition position, ChessPiece piece) {
         if (piece != null) {
             ChessPiece.PieceType type = board.getPiece(position).getPieceType();
             ChessGame.TeamColor color = board.getPiece(position).getTeamColor();
@@ -167,8 +171,8 @@ public class ManifestBoard {
         } else {
             printPlayer(out, null, null);
         }
-            out.print(RESET_BG_COLOR);
-        }
+        out.print(RESET_BG_COLOR);
+    }
 
     private void drawHighlightRowsOfSquares(PrintStream out, int row, int col, ArrayList<ChessPosition> positions) {
         ChessPosition position = new ChessPosition(row, col);
@@ -180,14 +184,7 @@ public class ManifestBoard {
         } else {
             out.print(SET_BG_COLOR_BLUE);
         }
-        if (piece != null) {
-            ChessPiece.PieceType type = board.getPiece(position).getPieceType();
-            ChessGame.TeamColor color = board.getPiece(position).getTeamColor();
-            printPlayer(out, color, type);
-        } else {
-            printPlayer(out, null, null);
-        }
-        out.print(RESET_BG_COLOR);
+        drawRowsHelper(out, position, piece);
     }
 
     private static void printPlayer(PrintStream out, ChessGame.TeamColor color, ChessPiece.PieceType piece) {

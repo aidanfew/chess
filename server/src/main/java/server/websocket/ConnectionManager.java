@@ -27,18 +27,6 @@ public class ConnectionManager {
         connections.remove(session, session);
     }
 
-    public void broadcast(WebSocketSession excludeSession, ServerMessage serverMessage) throws ResponseException, IOException {
-        String message = serverMessage.toString();
-        for (WebSocketSession session : connections.values()) {
-            if (session.isOpen()) {
-                if (!session.equals(excludeSession)) {
-                    session.getRemote().sendString(message);
-                    System.out.println(message);
-                }
-            }
-        }
-    }
-
     //send load game back to root
     public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage) throws IOException {
         if (session.isOpen()) {

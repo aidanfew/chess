@@ -215,7 +215,7 @@ public class ChessClient implements ServerMessageHandler {
         try {
             ws.webSocketFacadeLeave(authToken);
             state = State.SIGNEDIN;
-            return "You are no longer playing\n" + help();
+            return "\u001B[33You are no longer playing\u001B[0m\n" + help();
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
         }
