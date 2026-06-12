@@ -29,7 +29,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final ConnectionManager connections = new ConnectionManager();
     private final GameSqlDAO gameSqlDAO = new GameSqlDAO();
     private final AuthSqlDAO authSqlDAO = new AuthSqlDAO();
-    private final ArrayList<Integer> endedGames = new ArrayList<>();
+    public static final ArrayList<Integer> endedGames = new ArrayList<>();
 
     public WebSocketHandler() throws DataAccessException {
     }
@@ -64,13 +64,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     case LEAVE -> leave((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
-                    case MAKE_MOVE -> makeMove((WebSocketSession) wsMessageContext.session,
+                    case MAKE_MOVE -> {
+                        System.out.println("endedGames count is: " + endedGames.size());
+                            makeMove((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             convertCommandMakeMove(wsMessageContext).sendMove(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
-                    case RESIGN -> resign((WebSocketSession) wsMessageContext.session,
+                    }
+                    case RESIGN -> {System.out.println("endedGames count is: " + endedGames.size());
+                        resign((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
+                    }
                 }
             }
 

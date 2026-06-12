@@ -5,10 +5,12 @@ import org.junit.jupiter.api.*;
 import passoff.model.*;
 import passoff.websocket.*;
 import server.Server;
+import server.websocket.ConnectionManager;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.net.URISyntaxException;
+import java.sql.Connection;
 import java.util.*;
 import java.util.stream.Collectors;
 

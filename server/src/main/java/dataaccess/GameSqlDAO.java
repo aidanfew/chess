@@ -5,12 +5,15 @@ import com.google.gson.Gson;
 import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import model.GameData;
 import results.ListGamesHelperResult;
+import server.websocket.WebSocketHandler;
 
 import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+
+import static server.websocket.WebSocketHandler.endedGames;
 
 public class GameSqlDAO {
 
@@ -135,6 +138,7 @@ public class GameSqlDAO {
         try (Connection connection = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.executeUpdate();
+                endedGames.clear();
             }
         } catch (Exception e) {
             String message = "Error: Connection error";
