@@ -6,8 +6,6 @@ import com.google.gson.Gson;
 import dataaccess.AuthSqlDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameSqlDAO;
-import dataaccess.UserSqlDAO;
-import exception.ResponseException;
 import io.javalin.websocket.*;
 import model.GameData;
 import org.jetbrains.annotations.NotNull;
@@ -15,13 +13,11 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import org.eclipse.jetty.websocket.common.WebSocketSession;
 import websocket.messages.LoadGameMessage;
-import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
-import javax.swing.*;
 import java.io.IOException;
-import java.net.http.WebSocket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
@@ -30,6 +26,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private final GameSqlDAO gameSqlDAO = new GameSqlDAO();
     private final AuthSqlDAO authSqlDAO = new AuthSqlDAO();
     public static final ArrayList<Integer> endedGames = new ArrayList<>();
+    private final HashMap<Integer, ArrayList<WebSocketSession>> sessionAndGameMap = new HashMap<>();
 
     public WebSocketHandler() throws DataAccessException {
     }
@@ -58,24 +55,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 }
             } else {
                 switch (userGameCommand.getCommandType()) {
-                    case CONNECT -> connect((WebSocketSession) wsMessageContext.session,
-                            gameSqlDAO.getGame(userGameCommand.getGameID()).game(),
+                    case CONNECT ->
+                        connect((WebSocketSession) wsMessageContext.session,
+                            gameSqlDAO.getGame(userGameCommand.getGameID()),
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username());
                     case LEAVE -> leave((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
-                    case MAKE_MOVE -> {
-                        System.out.println("endedGames count is: " + endedGames.size());
-                            makeMove((WebSocketSession) wsMessageContext.session,
+                    case MAKE_MOVE -> makeMove((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             convertCommandMakeMove(wsMessageContext).sendMove(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
-                    }
-                    case RESIGN -> {System.out.println("endedGames count is: " + endedGames.size());
-                        resign((WebSocketSession) wsMessageContext.session,
+                    case RESIGN -> resign((WebSocketSession) wsMessageContext.session,
                             authSqlDAO.getAuth(userGameCommand.getAuthToken()).username(),
                             gameSqlDAO.getGame(userGameCommand.getGameID()));
-                    }
                 }
             }
 
@@ -84,10 +77,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void connect(WebSocketSession session, ChessGame game, String userName) throws IOException {
-        connections.add(session);
-        ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-        connections.broadcastConnect(session, serverMessage, userName, "connected");
+    private void connect(WebSocketSession session, GameData gameData, String userName) throws IOException {
+        if (!sessionAndGameMap.containsKey(gameData.gameID())) {
+            ArrayList<WebSocketSession> list = new ArrayList<>();
+            sessionAndGameMap.put(gameData.gameID(), list);
+        }
+        if (!sessionAndGameMap.get(gameData.gameID()).contains(session)) {
+            sessionAndGameMap.get(gameData.gameID()).add(session);
+        }
+        if (sessionAndGameMap.get(gameData.gameID()).size() > 1) {
+            connections.broadcastAllButRoot(session, userName, "connected", sessionAndGameMap.get(gameData.gameID()));
+        }
+        ServerMessage serverMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, gameData.game());
+        connections.broadcastConnect(session, serverMessage);
     }
 
     private void error(WebSocketSession session, String message) throws IOException {
@@ -100,8 +102,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } else {
             gameSqlDAO.setUserToNull(gameData.gameID(), ChessGame.TeamColor.BLACK);
         }
-        connections.remove(session);
-        connections.broadcastLeave(session, userName, "left");
+        sessionAndGameMap.get(gameData.gameID()).remove(session);
+        connections.broadcastAllButRoot(session, userName, "left", sessionAndGameMap.get(gameData.gameID()));
     }
 
     private void resign(WebSocketSession session, String userName, GameData gameData) throws IOException {
@@ -113,7 +115,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             error(session, "You are not in play");
             return;
         }
-        connections.broadcastGeneralNotification(session, userName + " has resigned");
+        connections.broadcastGeneralNotification(session, userName + " has resigned",
+                sessionAndGameMap.get(gameData.gameID()));
         endedGames.add(gameData.gameID());
     }
 
@@ -133,28 +136,29 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return;
         }
         try {
+            ArrayList<WebSocketSession> list = sessionAndGameMap.get(gameData.gameID());
             game.setBoard(gameData.game().getBoard());
             game.makeMove(move);
             GameData newGameData = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(),
                     gameData.gameName(), game);
             gameSqlDAO.replaceGame(gameData.gameID(), null, newGameData);
-            connections.broadcastMove(session, userName, "moved", reconvertMove(move));
-            connections.broadcastBoard(session, newGameData.game());
+            connections.broadcastMove(session, userName, "moved", reconvertMove(move), list);
+            connections.broadcastBoard(session, newGameData.game(), list);
             if (game.isInCheck(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastGeneralNotification(session, "WHITE is in check");
+                connections.broadcastGeneralNotification(session, "WHITE is in check", list);
             } else if (game.isInCheck(ChessGame.TeamColor.BLACK)){
-                connections.broadcastGeneralNotification(session, "BLACK is in check");
+                connections.broadcastGeneralNotification(session, "BLACK is in check", list);
             } else if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastMate(session, "check", ChessGame.TeamColor.WHITE);
+                connections.broadcastMate(session, "check", ChessGame.TeamColor.WHITE, list);
                 endedGames.add(gameData.gameID());
             } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
-                connections.broadcastMate(session, "check", ChessGame.TeamColor.BLACK);
+                connections.broadcastMate(session, "check", ChessGame.TeamColor.BLACK, list);
                 endedGames.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
-                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK);
+                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
                 endedGames.add(gameData.gameID());
             } else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
-                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK);
+                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK, list);
                 endedGames.add(gameData.gameID());
             }
         } catch (Exception e) {

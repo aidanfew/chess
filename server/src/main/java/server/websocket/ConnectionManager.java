@@ -11,7 +11,8 @@ import websocket.messages.ServerMessage;
 
 
 import java.io.IOException;
-import java.net.http.WebSocket;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -38,36 +39,30 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage, String userName, String action) throws IOException {
+    //send load game back to root
+    public void broadcastConnect(WebSocketSession session, ServerMessage serverMessage) throws IOException {
         if (session.isOpen()) {
             String connectMessage = new Gson().toJson(serverMessage);
             session.getRemote().sendString(connectMessage);
-
-            String message = actionNotification(userName, action);
-            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            for (WebSocketSession s : connections.values()) {
-                if (!s.equals(session)) {
-                    var json = new Gson().toJson(notificationMessage);
-                    s.getRemote().sendString(json);
-                }
-            }
         }
     }
 
-    public void broadcastLeave(WebSocketSession session, String userName, String action) throws IOException {
+    //send notification to everyone but root in the game
+    public void broadcastAllButRoot(WebSocketSession session, String userName, String action,
+                                    ArrayList<WebSocketSession> sessionList) throws IOException {
         String message = actionNotification(userName, action);
         NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        if (session.isOpen()) {
-            for (WebSocketSession s : connections.values()) {
+        for (WebSocketSession s : sessionList) {
+            if (s.isOpen()) {
                 if (!s.equals(session)) {
                     String json = new Gson().toJson(notificationMessage);
                     s.getRemote().sendString(json);
                 }
             }
-            connections.remove(session);
         }
     }
 
+    //send error to root only
     public void sendError(WebSocketSession session, String errorMessage) throws IOException {
         if (session.isOpen()) {
             ErrorMessage errorType = new ErrorMessage(ServerMessage.ServerMessageType.ERROR, errorMessage);
@@ -76,12 +71,14 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastMove(WebSocketSession session, String userName, String action, String endMove) throws IOException {
+    //send move to all but root
+    public void broadcastMove(WebSocketSession session, String userName, String action, String endMove,
+                              ArrayList<WebSocketSession> sessionList) throws IOException {
         String message = actionNotification(userName, action) + " to " + endMove;
-        if (session.isOpen()) {
-            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            String json = new Gson().toJson(notificationMessage);
-            for (WebSocketSession s : connections.values()) {
+        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        String json = new Gson().toJson(notificationMessage);
+        for (WebSocketSession s : sessionList) {
+            if (s.isOpen()) {
                 if (!s.equals(session)) {
                     s.getRemote().sendString(json);
                 }
@@ -89,32 +86,34 @@ public class ConnectionManager {
         }
     }
 
-    public void broadcastBoard(WebSocketSession session, ChessGame game) throws IOException {
-        if (session.isOpen()) {
-            LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
-            String json = new Gson().toJson(loadGameMessage);
-            for (WebSocketSession s : connections.values()) {
+    public void broadcastBoard(WebSocketSession session, ChessGame game, ArrayList<WebSocketSession> sessionList) throws IOException {
+        LoadGameMessage loadGameMessage = new LoadGameMessage(ServerMessage.ServerMessageType.LOAD_GAME, game);
+        String json = new Gson().toJson(loadGameMessage);
+        for (WebSocketSession s : sessionList) {
+            if (s.isOpen()) {
                 s.getRemote().sendString(json);
             }
         }
     }
 
-    public void broadcastMate(WebSocketSession session, String type, ChessGame.TeamColor color) throws IOException {
-        if (session.isOpen()) {
-            String message = String.format("%s is in %smate", color.toString(), type);
-            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            String json = new Gson().toJson(notificationMessage);
-            for (WebSocketSession s : connections.values()) {
+    public void broadcastMate(WebSocketSession session, String type, ChessGame.TeamColor color,
+                              ArrayList<WebSocketSession> sessionList) throws IOException {
+        String message = String.format("%s is in %smate", color.toString(), type);
+        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        String json = new Gson().toJson(notificationMessage);
+        for (WebSocketSession s : sessionList) {
+            if (s.isOpen()) {
                 s.getRemote().sendString(json);
             }
         }
     }
 
-    public void broadcastGeneralNotification(WebSocketSession session, String message) throws IOException {
-        if (session.isOpen()) {
-            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-            String json = new Gson().toJson(notificationMessage);
-            for (WebSocketSession s : connections.values()) {
+    public void broadcastGeneralNotification(WebSocketSession session, String message,
+                                             ArrayList<WebSocketSession> sessionList) throws IOException {
+        NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        String json = new Gson().toJson(notificationMessage);
+        for (WebSocketSession s : sessionList) {
+            if (s.isOpen()) {
                 s.getRemote().sendString(json);
             }
         }
