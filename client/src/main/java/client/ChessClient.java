@@ -267,7 +267,6 @@ public class ChessClient implements ServerMessageHandler {
             try {
                 assertInGameplay();
                 String square = params[0];
-                ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
                 int file = fileToColumn(square.charAt(0));
                 int rank = Character.getNumericValue(square.charAt(1));
                 if (currentGame.getBoard().getPiece(new ChessPosition(rank, file)) == null) {
@@ -279,6 +278,7 @@ public class ChessClient implements ServerMessageHandler {
                 for (ChessMove move : validMoves) {
                     positions.add(move.getEndPosition());
                 }
+                ManifestBoard manifestBoard = new ManifestBoard(currentGame.getBoard(), perspectiveColor);
                 manifestBoard.runHighlights(positions);
             } catch (Exception e) {
                 throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
