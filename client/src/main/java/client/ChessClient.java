@@ -84,6 +84,7 @@ public class ChessClient implements ServerMessageHandler {
                     case "quit" -> "quit";
                     case "leave" -> leave();
                     case "move" -> makeMove(params);
+                    case "resign" -> resign();
                     default -> help();
                 };
             }
@@ -175,10 +176,6 @@ public class ChessClient implements ServerMessageHandler {
                     ws.webSocketFacadeConnect(authToken, params[0]);
                     perspectiveColor = params[1];
                     state = State.GAMEPLAY;
-//                    ChessBoard board = new ChessBoard();
-//                    board.resetBoard();
-//                    ManifestBoard manifestBoard = new ManifestBoard(board, params[1]);
-//                    manifestBoard.run();
                 } catch (Exception e) {
                     throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
                 }
@@ -194,14 +191,10 @@ public class ChessClient implements ServerMessageHandler {
     public String observe(String... params) throws ResponseException {
         state = State.GAMEPLAY;
         if (params.length >= 1) {
-//            ChessBoard board = new ChessBoard();
-//            board.resetBoard();
-//            ManifestBoard manifestBoard = new ManifestBoard(board, "WHITE");
             try {
                 if (gameHashMap.containsKey(params[0])) {
                     perspectiveColor = "WHITE";
                     ws.webSocketFacadeConnect(authToken, params[0]);
-//                    manifestBoard.run();
                     return "";
                 } else {
                     return "\u001B[31mError: Invalid GameID\u001B[0m";
@@ -234,6 +227,16 @@ public class ChessClient implements ServerMessageHandler {
             } catch (Exception e) {
                 throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
             }
+        }
+        return "";
+    }
+
+    private String resign() throws ResponseException {
+        assertInGameplay();
+        try {
+            ws.webSocketFacadeResign(authToken);
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
         }
         return "";
     }

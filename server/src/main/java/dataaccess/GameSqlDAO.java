@@ -2,14 +2,15 @@ package dataaccess;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import com.mysql.cj.x.protobuf.MysqlxPrepare;
 import model.GameData;
 import results.ListGamesHelperResult;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import javax.xml.crypto.Data;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public class GameSqlDAO {
 
@@ -35,7 +36,23 @@ public class GameSqlDAO {
         }
     }
 
-    public Integer currentGameID() throws Exception{
+    public void setUserToNull(Integer gameID, ChessGame.TeamColor color) throws Exception {
+        String sql = "";
+        if (Objects.equals(color, ChessGame.TeamColor.WHITE)) {
+            sql = "UPDATE games SET whiteUsername = ? WHERE gameID = ?";
+        } else if (Objects.equals(color, ChessGame.TeamColor.BLACK)){
+            sql = "UPDATE games SET blackUsername = ? WHERE gameID = ?";
+        }
+        try (Connection connection = DatabaseManager.getConnection()) {
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setNull(1, 12);
+                stmt.setInt(2, gameID);
+                stmt.executeUpdate();
+            }
+        }
+    }
+
+    public Integer currentGameID() throws Exception {
         String sql = "SELECT MAX(gameID) FROM games";
         try (Connection connection = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -50,7 +67,7 @@ public class GameSqlDAO {
         }
     }
 
-    public GameData getGame(Integer gameID) throws Exception{
+    public GameData getGame(Integer gameID) throws Exception {
         String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM games WHERE gameID = ?";
         try (Connection connection = DatabaseManager.getConnection()) {
             try (PreparedStatement stmt = connection.prepareStatement(sql)) {

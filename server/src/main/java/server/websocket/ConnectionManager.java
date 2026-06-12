@@ -110,6 +110,16 @@ public class ConnectionManager {
         }
     }
 
+    public void broadcastGeneralNotification(WebSocketSession session, String message) throws IOException {
+        if (session.isOpen()) {
+            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            String json = new Gson().toJson(notificationMessage);
+            for (WebSocketSession s : connections.values()) {
+                s.getRemote().sendString(json);
+            }
+        }
+    }
+
     public String actionNotification(String userName, String action) {
         return userName + " has " + action;
     }

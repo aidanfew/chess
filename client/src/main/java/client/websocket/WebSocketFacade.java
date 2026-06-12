@@ -11,6 +11,7 @@ import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 
@@ -78,6 +79,15 @@ public class WebSocketFacade extends Endpoint {
         try {
             var makeMoveCommand = new MakeMoveCommand(MakeMoveCommand.CommandType.MAKE_MOVE, authToken, currentGameID, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(makeMoveCommand));
+        } catch (Exception e) {
+            throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
+        }
+    }
+
+    public void webSocketFacadeResign(String authToken) throws ResponseException {
+        try {
+            var userGameCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(userGameCommand));
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, e.getMessage());
         }
