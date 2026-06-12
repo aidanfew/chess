@@ -99,6 +99,17 @@ public class ConnectionManager {
         }
     }
 
+    public void broadcastMate(WebSocketSession session, String type, ChessGame.TeamColor color) throws IOException {
+        if (session.isOpen()) {
+            String message = String.format("%s is in %smate", color.toString(), type);
+            NotificationMessage notificationMessage = new NotificationMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+            String json = new Gson().toJson(notificationMessage);
+            for (WebSocketSession s : connections.values()) {
+                s.getRemote().sendString(json);
+            }
+        }
+    }
+
     public String actionNotification(String userName, String action) {
         return userName + " has " + action;
     }

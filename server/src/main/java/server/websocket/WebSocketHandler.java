@@ -90,6 +90,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(WebSocketSession session, String userName, ChessMove move, GameData gameData) throws IOException {
         ChessGame game = gameData.game();
+        if (game.isInCheckmate(ChessGame.TeamColor.WHITE) || game.isInCheckmate(ChessGame.TeamColor.BLACK) ||
+        game.isInStalemate(ChessGame.TeamColor.WHITE) || game.isInStalemate(ChessGame.TeamColor.BLACK)) {
+            error(session, "Game is over");
+            return;
+        }
         if (!Objects.equals(userName, gameData.whiteUsername()) && !Objects.equals(userName, gameData.blackUsername())) {
             error(session, "You are not in play");
             return;
@@ -107,9 +112,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameSqlDAO.replaceGame(gameData.gameID(), null, newGameData);
             connections.broadcastMove(session, userName, "moved", reconvertMove(move));
             connections.broadcastBoard(session, newGameData.game());
+            if (game.isInCheckmate(ChessGame.TeamColor.WHITE)) {
+                connections.broadcastMate(session, "check", ChessGame.TeamColor.WHITE);
+            } else if (game.isInCheckmate(ChessGame.TeamColor.BLACK)) {
+                connections.broadcastMate(session, "check", ChessGame.TeamColor.BLACK);
+            } else if (game.isInStalemate(ChessGame.TeamColor.WHITE)) {
+                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK);
+            } else if (game.isInStalemate(ChessGame.TeamColor.BLACK)) {
+                connections.broadcastMate(session, "stale", ChessGame.TeamColor.BLACK);
+            }
         } catch (Exception e) {
             error(session, "invalid move");
         }
+
 
     }
 
